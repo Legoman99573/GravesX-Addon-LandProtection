@@ -14,14 +14,32 @@ import org.bukkit.event.Listener;
 
 import java.util.List;
 
+/**
+ * Listener for handling events related to grave interactions with WorldGuard region checks.
+ *
+ * This listener intercepts events related to grave creation, teleportation, opening, and auto-looting
+ * and ensures that the player is a member of the respective WorldGuard region or has the necessary permissions.
+ * It integrates with the LandProtection plugin to enforce these rules.
+ */
 public class LandProtectionWorldGuardGraveCreateListener implements Listener {
 
     private final LandProtection plugin;
 
+    /**
+     * Constructor for the listener. Initializes the plugin instance.
+     *
+     * @param plugin The LandProtection plugin instance.
+     */
     public LandProtectionWorldGuardGraveCreateListener(LandProtection plugin) {
         this.plugin = plugin;
     }
 
+    /**
+     * Handles the event of creating a grave. Checks if the player is allowed to create a grave in the
+     * WorldGuard region where the grave is being placed.
+     *
+     * @param event The GraveCreateEvent that contains information about the player and the grave location.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveCreate(GraveCreateEvent event) {
         Player player = (Player) event.getEntity();
@@ -55,6 +73,12 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
         }
     }
 
+    /**
+     * Handles the event of teleporting to a grave. Checks if the player is allowed to teleport to the grave
+     * within the WorldGuard region where the grave is located.
+     *
+     * @param event The GraveTeleportEvent that contains information about the player and the grave location.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveTeleport(GraveTeleportEvent event) {
         Player player = event.getPlayer();
@@ -88,6 +112,12 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
         }
     }
 
+    /**
+     * Handles the event of opening a grave. Checks if the player is allowed to open a grave within the
+     * WorldGuard region where the grave is located.
+     *
+     * @param event The GraveOpenEvent that contains information about the player and the grave location.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveOpen(GraveOpenEvent event) {
         Player player = event.getPlayer();
@@ -121,6 +151,12 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
         }
     }
 
+    /**
+     * Handles the event of automatically looting a grave. Checks if the player is allowed to auto loot a grave
+     * within the WorldGuard region where the grave is located.
+     *
+     * @param event The GraveAutoLootEvent that contains information about the player and the grave location.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveAutoLooted(GraveAutoLootEvent event) {
         Player player = event.getPlayer();

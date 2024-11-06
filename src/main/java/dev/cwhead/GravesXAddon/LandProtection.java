@@ -7,6 +7,12 @@ import dev.cwhead.GravesXAddon.listener.LandProtectionWorldGuardGraveCreateListe
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * Main class for the Land Protection addon for GravesX. This plugin integrates with WorldGuard
+ * to handle region-based permissions for grave creation, teleportation, opening, and looting.
+ * It also ensures compatibility with GravesX and provides event handling for interactions
+ * related to graveyards and WorldGuard regions.
+ */
 public final class LandProtection extends JavaPlugin {
 
     private GravesXAPI gravesXAPI;
@@ -15,6 +21,10 @@ public final class LandProtection extends JavaPlugin {
 
     private WorldGuardImpl worldGuard;
 
+    /**
+     * Called when the plugin is loading. Tries to initialize the WorldGuard integration.
+     * If WorldGuard is not available, it silently ignores the failure.
+     */
     @Override
     public void onLoad() {
         try {
@@ -24,6 +34,12 @@ public final class LandProtection extends JavaPlugin {
         }
     }
 
+    /**
+     * Called when the plugin is enabled. This method hooks into GravesX and WorldGuard (if available),
+     * registers event listeners, and logs relevant information to the console.
+     *
+     * @throws IllegalStateException If the GravesX plugin is not found or enabled, the plugin will disable itself.
+     */
     @Override
     public void onEnable() {
         Plugin gravesX = getServer().getPluginManager().getPlugin("GravesX");
@@ -51,19 +67,37 @@ public final class LandProtection extends JavaPlugin {
         }
     }
 
+    /**
+     * Called when the plugin is disabled. Logs a message indicating that the Land Protection addon is disabled.
+     */
     @Override
     public void onDisable() {
         getLogger().info("Land Protection Addon Disabled.");
     }
 
+    /**
+     * Gets the GravesXAPI instance associated with the plugin. This API provides access to GravesX functionality.
+     *
+     * @return The GravesXAPI instance.
+     */
     public GravesXAPI getGravesXAPI() {
         return gravesXAPI;
     }
 
+    /**
+     * Gets the singleton instance of the LandProtection plugin.
+     *
+     * @return The singleton instance of the LandProtection plugin.
+     */
     public static LandProtection getInstance() {
         return instance;
     }
 
+    /**
+     * Gets the WorldGuardImpl instance, which handles WorldGuard integration for this plugin.
+     *
+     * @return The WorldGuardImpl instance.
+     */
     public WorldGuardImpl getWorldGuard() {
         return worldGuard;
     }
