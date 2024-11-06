@@ -1,0 +1,17 @@
+name: ${project.name}
+description: ${project.description}
+version: ${project.version}
+main: dev.cwhead.GravesXAddon.LandProtection
+api-version: 1.13
+prefix: GravesXAddon-LandProtection
+authors:
+  - Ranull
+  - JaySmethers
+  - Legoman99573
+depends:
+  - GravesX
+
+soft-depends:
+  - WorldGuard
+  - Towny
+  - GriefPrevention
