@@ -62,9 +62,11 @@ public class WorldGuardImpl {
         try {
             StateFlag newFlag = new StateFlag(flagName, false);
             worldGuard.getFlagRegistry().register(newFlag);
+            plugin.getLogger().info("Registered Flag " + flagName + " Successfully.");
             return newFlag;
         } catch (FlagConflictException exception) {
             Flag<?> conflictingFlag = worldGuard.getFlagRegistry().get(flagName);
+            plugin.getLogger().warning("Failed to Register Flag " + flagName + ". Flag will be ignored.");
             return (conflictingFlag instanceof StateFlag) ? (StateFlag) conflictingFlag : null;
         }
     }

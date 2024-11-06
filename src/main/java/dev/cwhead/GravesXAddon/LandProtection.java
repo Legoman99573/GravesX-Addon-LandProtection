@@ -21,6 +21,8 @@ public final class LandProtection extends JavaPlugin {
 
     private WorldGuardImpl worldGuard;
 
+    private boolean worldGuardEnabled;
+
     /**
      * Called when the plugin is loading. Tries to initialize the WorldGuard integration.
      * If WorldGuard is not available, it silently ignores the failure.
@@ -29,8 +31,11 @@ public final class LandProtection extends JavaPlugin {
     public void onLoad() {
         try {
            worldGuard = new WorldGuardImpl(this);
+           worldGuardEnabled = true;
+           getLogger().info("Registered WorldGuard Flags Successfully.");
         } catch (Exception ignored) {
-            // ignored
+            getLogger().warning("Failed to register WorldGuard Flags. Flags will be ignored.");
+            worldGuardEnabled = false;
         }
     }
 
@@ -50,14 +55,15 @@ public final class LandProtection extends JavaPlugin {
 
             Plugin worldGuard = getServer().getPluginManager().getPlugin("WorldGuard");
 
-            if (worldGuard != null && worldGuard.isEnabled()) {
+            if (worldGuardEnabled && (worldGuard != null && worldGuard.isEnabled())) {
                 try {
                     getServer().getPluginManager().registerEvents(new LandProtectionWorldGuardGraveCreateListener(this), this);
-                    getLogger().info("Hooked into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion());
-                    getLogger().info("Hooked into GravesX. WorldGuard Region handling will be handled by GravesX Addon: Land Protection");
+                    getLogger().info("Hooked into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard Region handling will be handled by GravesX Addon: Land Protection");
+                    worldGuardEnabled = true;
                 } catch (Exception e) {
                     getLogger().warning("Failed to hook into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard regions will be ignored.");
                     getGravesXAPI().getGravesX().logStackTrace(e);
+                    worldGuardEnabled = false;
                 }
             }
 
