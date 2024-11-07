@@ -60,7 +60,7 @@ public class WorldGuardImpl {
      */
     private StateFlag registerNewFlag(String flagName) {
         try {
-            StateFlag newFlag = new StateFlag(flagName, false);
+            StateFlag newFlag = new StateFlag(flagName, true);
             worldGuard.getFlagRegistry().register(newFlag);
             plugin.getLogger().info("Registered Flag " + flagName + " Successfully.");
             return newFlag;
@@ -113,12 +113,12 @@ public class WorldGuardImpl {
             return true;
         }
 
-        StateFlag createFlag = getFlagName("gravesx-grave-teleport");
+        StateFlag teleportFlag = getFlagName("gravesx-grave-teleport");
 
         return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
                 BukkitAdapter.adapt(location),
                 WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                createFlag);
+                teleportFlag);
     }
 
     /**
@@ -133,12 +133,12 @@ public class WorldGuardImpl {
             return true;
         }
 
-        StateFlag createFlag = getFlagName("gravesx-grave-loot");
+        StateFlag lootFlag = getFlagName("gravesx-grave-loot");
 
         return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
                 BukkitAdapter.adapt(location),
                 WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                createFlag);
+                lootFlag);
     }
 
     /**
@@ -153,12 +153,12 @@ public class WorldGuardImpl {
             return true;
         }
 
-        StateFlag createFlag = getFlagName("gravesx-grave-autoloot");
+        StateFlag autoLootFlag = getFlagName("gravesx-grave-autoloot");
 
         return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
                 BukkitAdapter.adapt(location),
                 WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                createFlag);
+                autoLootFlag);
     }
 
     /**

@@ -6,7 +6,7 @@
 
     <groupId>dev.cwhead.GravesXAddon</groupId>
     <artifactId>GravesXAddon-LandProtection</artifactId>
-    <version>4.9.1.1</version>
+    <version>4.9.1.2</version>
     <packaging>jar</packaging>
 
     <name>GravesXAddon-LandProtection</name>
