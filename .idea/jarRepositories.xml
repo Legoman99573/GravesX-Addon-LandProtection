@@ -46,5 +46,10 @@
       <option name="name" value="enginehub" />
       <option name="url" value="https://maven.enginehub.org/repo/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="cwhead-gravesx-snapshots" />
+      <option name="name" value="cwhead-gravesx-snapshots" />
+      <option name="url" value="https://repo.cwhead.dev/repository/maven-releases/" />
+    </remote-repository>
   </component>
 </project>
