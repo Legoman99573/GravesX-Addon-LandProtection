@@ -2,8 +2,9 @@ package dev.cwhead.GravesXAddon;
 
 import com.ranull.graves.Graves;
 import dev.cwhead.GravesX.GravesXAPI;
+import dev.cwhead.GravesXAddon.integration.TownyImpl;
 import dev.cwhead.GravesXAddon.integration.WorldGuardImpl;
-import dev.cwhead.GravesXAddon.listener.LandProtectionWorldGuardGraveCreateListener;
+import dev.cwhead.GravesXAddon.listener.LandProtectionGraveCreateListener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,7 +22,11 @@ public final class LandProtection extends JavaPlugin {
 
     private WorldGuardImpl worldGuard;
 
+    private TownyImpl towny;
+
     private boolean worldGuardEnabled;
+
+    private boolean townyEnabled;
 
     /**
      * Called when the plugin is loading. Tries to initialize the WorldGuard integration.
@@ -57,13 +62,27 @@ public final class LandProtection extends JavaPlugin {
 
             if (worldGuardEnabled && (worldGuard != null && worldGuard.isEnabled())) {
                 try {
-                    getServer().getPluginManager().registerEvents(new LandProtectionWorldGuardGraveCreateListener(this), this);
+                    getServer().getPluginManager().registerEvents(new LandProtectionGraveCreateListener(this), this);
                     getLogger().info("Hooked into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard Region handling will be handled by GravesX Addon: Land Protection");
                     worldGuardEnabled = true;
                 } catch (Exception e) {
                     getLogger().warning("Failed to hook into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard regions will be ignored.");
                     getGravesXAPI().getGravesX().logStackTrace(e);
                     worldGuardEnabled = false;
+                }
+            }
+
+            Plugin townyPlugin = getServer().getPluginManager().getPlugin("Towny");
+
+            if (townyPlugin != null && townyPlugin.isEnabled()) {
+                try {
+                    getLogger().info("Hooked into " + townyPlugin.getDescription().getName() + " v." + townyPlugin.getDescription().getVersion() + ". Town handling will be handled by GravesX Addon: Land Protection");
+                    towny = new TownyImpl(this);
+                    townyEnabled = true;
+                } catch (Exception e) {
+                    getLogger().warning("Failed to hook into " + townyPlugin.getDescription().getName() + " v." + townyPlugin.getDescription().getVersion() + ". Town handling will be ignored.");
+                    getGravesXAPI().getGravesX().logStackTrace(e);
+                    townyEnabled = false;
                 }
             }
 
@@ -106,5 +125,17 @@ public final class LandProtection extends JavaPlugin {
      */
     public WorldGuardImpl getWorldGuard() {
         return worldGuard;
+    }
+
+    public TownyImpl getTowny() {
+        return towny;
+    }
+
+    public boolean isWorldGuardEnabled() {
+        return worldGuardEnabled;
+    }
+
+    public boolean isTownyEnabled() {
+        return townyEnabled;
     }
 }

@@ -15,13 +15,13 @@ import org.bukkit.event.Listener;
 import java.util.List;
 
 /**
- * Listener for handling events related to grave interactions with WorldGuard region checks.
+ * Listener for handling events related to grave interactions with region checks.
  *
  * This listener intercepts events related to grave creation, teleportation, opening, and auto-looting
  * and ensures that the player is a member of the respective WorldGuard region or has the necessary permissions.
  * It integrates with the LandProtection plugin to enforce these rules.
  */
-public class LandProtectionWorldGuardGraveCreateListener implements Listener {
+public class LandProtectionGraveCreateListener implements Listener {
 
     private final LandProtection plugin;
 
@@ -30,13 +30,13 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
      *
      * @param plugin The LandProtection plugin instance.
      */
-    public LandProtectionWorldGuardGraveCreateListener(LandProtection plugin) {
+    public LandProtectionGraveCreateListener(LandProtection plugin) {
         this.plugin = plugin;
     }
 
     /**
      * Handles the event of creating a grave. Checks if the player is allowed to create a grave in the
-     * WorldGuard region where the grave is being placed.
+     * WorldGuard region where the grave is being placed, as well as Towny permissions.
      *
      * @param event The GraveCreateEvent that contains information about the player and the grave location.
      */
@@ -49,27 +49,33 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
             return;
         }
 
-        boolean isMember = plugin.getWorldGuard().canCreateGrave(player, deathLocation);
-        String canCreate = isMember ? "can" : "can't";
-        plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " " + canCreate + " create a grave in worldguard region location: " + deathLocation, 2);
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
 
-        List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
-
-        for (String regionKey : regionKeys) {
-            String regionId = regionKey.split("\\|")[2];
-            if (plugin.getWorldGuard().isMember(regionId, player)) {
-                isMember = true;
-                break;
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canCreateGrave(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
             }
         }
 
-        if (!isMember) {
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().canCreateGrave(player, deathLocation);
+        }
+
+        if (!isWorldGuardMember || !isTownyMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to create a grave here.");
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " isn't a member of a worldguard region location: " + deathLocation, 2);
             event.setAddon(true);
             event.setCancelled(true);
         } else {
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " is a member of a worldguard region location: " + deathLocation, 2);
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can create a grave at: " + deathLocation, 2);
         }
     }
 
@@ -88,27 +94,33 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
             return;
         }
 
-        boolean isMember = plugin.getWorldGuard().canTeleport(player, deathLocation);
-        String canTeleport = isMember ? "can" : "can't";
-        plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " " + canTeleport + " teleport to a grave in worldguard region location: " + deathLocation, 2);
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
 
-        List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
-
-        for (String regionKey : regionKeys) {
-            String regionId = regionKey.split("\\|")[2];
-            if (plugin.getWorldGuard().isMember(regionId, player)) {
-                isMember = true;
-                break;
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canTeleport(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
             }
         }
 
-        if (!isMember) {
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().canTeleport(player, deathLocation);
+        }
+
+        if (!isWorldGuardMember || !isTownyMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to teleport to your grave in this region.");
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " isn't a member of a worldguard region location: " + deathLocation, 2);
             event.setAddon(true);
             event.setCancelled(true);
         } else {
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " is a member of a worldguard region location: " + deathLocation, 2);
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can teleport to grave at: " + deathLocation, 2);
         }
     }
 
@@ -127,27 +139,33 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
             return;
         }
 
-        boolean isMember = plugin.getWorldGuard().canLoot(player, deathLocation);
-        String canOpen = isMember ? "can" : "can't";
-        plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " " + canOpen + " open a grave in worldguard region location: " + deathLocation, 2);
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
 
-        List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
-
-        for (String regionKey : regionKeys) {
-            String regionId = regionKey.split("\\|")[2];
-            if (plugin.getWorldGuard().isMember(regionId, player)) {
-                isMember = true;
-                break;
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
             }
         }
 
-        if (!isMember) {
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().canLoot(player, deathLocation);
+        }
+
+        if (!isWorldGuardMember || !isTownyMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to open a grave in this region.");
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " isn't a member of a worldguard region location: " + deathLocation, 2);
             event.setAddon(true);
             event.setCancelled(true);
         } else {
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " is a member of a worldguard region location: " + deathLocation, 2);
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can open grave at: " + deathLocation, 2);
         }
     }
 
@@ -166,27 +184,33 @@ public class LandProtectionWorldGuardGraveCreateListener implements Listener {
             return;
         }
 
-        boolean isMember = plugin.getWorldGuard().canAutoLoot(player, deathLocation);
-        String canAutoLoot = isMember ? "can" : "can't";
-        plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " " + canAutoLoot + " auto loot a grave in worldguard region location: " + deathLocation, 2);
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
 
-        List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
-
-        for (String regionKey : regionKeys) {
-            String regionId = regionKey.split("\\|")[2];
-            if (plugin.getWorldGuard().isMember(regionId, player)) {
-                isMember = true;
-                break;
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canAutoLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
             }
         }
 
-        if (!isMember) {
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().canAutoLoot(player, deathLocation);
+        }
+
+        if (!isWorldGuardMember || !isTownyMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to auto loot a grave in this region.");
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " isn't a member of a worldguard region location: " + deathLocation, 2);
             event.setAddon(true);
             event.setCancelled(true);
         } else {
-            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " is a member of a worldguard region location: " + deathLocation, 2);
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can auto loot grave at: " + deathLocation, 2);
         }
     }
 }
