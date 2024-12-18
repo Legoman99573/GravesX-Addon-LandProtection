@@ -249,4 +249,43 @@ public class LandProtectionGraveCreateListener implements Listener {
             plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can auto loot grave at: " + deathLocation, 2);
         }
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onGraveProjectile(GraveProjectileHitEvent event) {
+        Player player = event.getPlayer();
+        Location deathLocation = player != null ? player.getLocation() : null;
+
+        if (player == null) {
+            return;
+        }
+
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
+
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canProjectile(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
+            }
+        }
+
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().canProjectile(player, deathLocation);
+        }
+
+        if (!isWorldGuardMember || !isTownyMember) {
+            player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to use a projectile to destroy a grave in this region.");
+            event.setAddon(true);
+            event.setCancelled(true);
+        } else {
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can projectile destroy a grave at: " + deathLocation, 2);
+        }
+    }
 }

@@ -44,7 +44,7 @@ public class WorldGuardImpl {
      * Flags include those for controlling grave actions such as autoloot, loot, create, and teleport.
      */
     private void registerMultipleFlags() {
-        List<String> flagNames = List.of("gravesx-grave-autoloot", "gravesx-grave-loot", "gravesx-grave-create", "gravesx-grave-teleport", "gravesx-grave-walkover");
+        List<String> flagNames = List.of("gravesx-grave-autoloot", "gravesx-grave-loot", "gravesx-grave-create", "gravesx-grave-teleport", "gravesx-grave-walkover", "gravesx-grave-projectile");
 
         for (String flagName : flagNames) {
             registerNewFlag(flagName);
@@ -179,6 +179,26 @@ public class WorldGuardImpl {
                 BukkitAdapter.adapt(location),
                 WorldGuardPlugin.inst().wrapPlayer((Player) entity),
                 autoLootFlag);
+    }
+
+    /**
+     * Checks whether the specified entity (player) is allowed to use a projectile to loot a grave at the specified location.
+     *
+     * @param entity the entity to check (must be a player)
+     * @param location the location of the grave
+     * @return {@code true} if the entity is allowed to walk over the grave at the location, {@code false} otherwise
+     */
+    public boolean canProjectile(Entity entity, Location location) {
+        if (!(entity instanceof Player)) {
+            return true;
+        }
+
+        StateFlag projectileFlag = getFlagName("gravesx-grave-projectile");
+
+        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
+                BukkitAdapter.adapt(location),
+                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
+                projectileFlag);
     }
 
     /**

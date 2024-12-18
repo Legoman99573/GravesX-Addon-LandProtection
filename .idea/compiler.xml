@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Land-Protection" />
+        <module name="GravesXAddon-LandProtection" />
       </profile>
     </annotationProcessing>
   </component>

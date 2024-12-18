@@ -137,6 +137,31 @@ public class TownyImpl {
     }
 
     /**
+     * Checks if the specified player has permission to use a projectile on a grave at the location within Towny.
+     *
+     * @param entity the entity to check (must be a player)
+     * @param location the location of the grave
+     * @return {@code true} if the player is allowed to projectile destroy the grave at the location, {@code false} otherwise
+     */
+    public boolean canProjectile(Entity entity, Location location) {
+        if (!(entity instanceof Player)) {
+            return true;
+        }
+
+        Player player = (Player) entity;
+        TownBlock townBlock = townyAPI.getTownBlock(location);
+
+        if (townBlock == null || !townBlock.hasTown()) {
+            return true;
+        }
+
+        Town town = townBlock.getTownOrNull();
+        Resident resident = townyAPI.getResident(player);
+
+        return resident != null && town.hasResident(resident);
+    }
+
+    /**
      * Checks if the specified player is a member of the specified town.
      *
      * @param townName the name of the town

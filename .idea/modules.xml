@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/GravesXAddon-LandProtection.iml" filepath="$PROJECT_DIR$/GravesXAddon-LandProtection.iml" />
       <module fileurl="file://$PROJECT_DIR$/Land-Protection.iml" filepath="$PROJECT_DIR$/Land-Protection.iml" />
     </modules>
   </component>
