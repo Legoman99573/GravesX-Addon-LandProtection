@@ -8,11 +8,10 @@ authors:
   - Ranull
   - JaySmethers
   - Legoman99573
-depends:
+depend:
   - GravesX
-  - Towny
 
-soft-depends:
+soft-depend:
   - WorldGuard
   - Towny
   - GriefPrevention
