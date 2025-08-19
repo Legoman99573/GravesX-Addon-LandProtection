@@ -6,7 +6,7 @@
 
     <groupId>dev.cwhead.GravesXAddon</groupId>
     <artifactId>GravesXAddon-LandProtection</artifactId>
-    <version>4.9.3.2</version>
+    <version>4.9.4.1</version>
     <packaging>jar</packaging>
 
     <name>GravesXAddon-LandProtection</name>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>com.ranull</groupId>
             <artifactId>GravesX</artifactId>
-            <version>4.9.7.1-api</version>
+            <version>4.9.8.1-api</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -100,6 +100,12 @@
             <groupId>com.sk89q.worldguard</groupId>
             <artifactId>worldguard-bukkit</artifactId>
             <version>7.0.12</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.angeschossen</groupId>
+            <artifactId>LandsAPI</artifactId>
+            <version>7.15.20</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

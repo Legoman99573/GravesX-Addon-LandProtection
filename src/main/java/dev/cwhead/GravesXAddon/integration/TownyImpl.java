@@ -86,6 +86,26 @@ public class TownyImpl {
         return resident != null && town.hasResident(resident);
     }
 
+    public boolean canWalkOver(Entity entity, Location location) {
+        if (!(entity instanceof Player)) {
+            return true;
+        }
+
+        Player player = (Player) entity;
+        TownBlock townBlock = townyAPI.getTownBlock(location);
+
+        // Allow teleportation if location is not in a town
+        if (townBlock == null || !townBlock.hasTown()) {
+            return true;
+        }
+
+        Town town = townBlock.getTownOrNull();
+        Resident resident = townyAPI.getResident(player);
+
+        // Check if the resident is allowed to teleport
+        return resident != null && town.hasResident(resident);
+    }
+
     /**
      * Checks if the specified player has permission to loot a grave at the location within Towny.
      *
