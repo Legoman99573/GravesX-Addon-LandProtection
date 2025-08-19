@@ -37,6 +37,7 @@ public class LandsImpl {
     private static RoleFlag FLAG_GRAVE_TELEPORT;
     private static RoleFlag FLAG_GRAVE_WALKOVER;
     private static RoleFlag FLAG_GRAVE_PROJECTILE;
+    private static RoleFlag FLAG_GRAVE_BREAK;
 
     /**
      * Constructs a new {@code LandsImpl} instance.
@@ -71,6 +72,7 @@ public class LandsImpl {
             FLAG_GRAVE_TELEPORT   = make.apply("gravesx-grave-teleport");
             FLAG_GRAVE_WALKOVER   = make.apply("gravesx-grave-walkover");
             FLAG_GRAVE_PROJECTILE = make.apply("gravesx-grave-projectile");
+            FLAG_GRAVE_BREAK      = make.apply("gravesx-grave-break");
         });
     }
 
@@ -149,6 +151,17 @@ public class LandsImpl {
      */
     public boolean canProjectile(Entity entity, Location loc) {
         return testFlag(entity, loc, FLAG_GRAVE_PROJECTILE);
+    }
+
+    /**
+     * Checks if the specified entity is allowed to break a grave at the given location.
+     *
+     * @param entity the entity to check (should be a {@link Player})
+     * @param loc    the location of the grave
+     * @return {@code true} if the action is allowed, otherwise {@code false}
+     */
+    public boolean canBreak(Entity entity, Location loc) {
+        return testFlag(entity, loc, FLAG_GRAVE_BREAK);
     }
 
     /**

@@ -32,6 +32,7 @@ public class GriefDefenderImpl {
     private static final String FLAG_AUTOLOOT   = "gravesx-grave-autoloot";
     private static final String FLAG_WALKOVER   = "gravesx-grave-walkover";
     private static final String FLAG_PROJECTILE = "gravesx-grave-projectile";
+    private static final String FLAG_BREAK      = "gravesx-grave-break";
 
     private final LandProtection plugin;
 
@@ -108,6 +109,17 @@ public class GriefDefenderImpl {
      */
     public boolean canProjectile(Entity entity, Location loc) {
         return check(entity, loc, RequiredTrust.ACCESSOR, FLAG_PROJECTILE);
+    }
+
+    /**
+     * Checks if player can break a grave at the given location.
+     *
+     * @param entity the acting entity
+     * @param loc    the target location
+     * @return true if allowed
+     */
+    public boolean canBreak(Entity entity, Location loc) {
+        return check(entity, loc, RequiredTrust.BUILDER, FLAG_BREAK);
     }
 
     /**

@@ -66,7 +66,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canCreateGrave(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -140,7 +140,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canTeleport(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -213,7 +213,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canLoot(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -286,7 +286,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canAutoLoot(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -353,7 +353,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canWalkOver(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -420,7 +420,7 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         boolean isTownyMember = true;
         if (isTownyEnabled) {
-            isTownyMember = plugin.getTowny().canProjectile(player, deathLocation);
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
         }
 
         boolean isLandsMember = true;
@@ -451,6 +451,73 @@ public class LandProtectionGraveCreateListener implements Listener {
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to use a projectile to destroy a grave in this region.");
+            event.setAddon(true);
+            event.setCancelled(true);
+        } else {
+            plugin.getGravesXAPI().getGravesX().debugMessage(player.getDisplayName() + " can projectile destroy a grave at: " + deathLocation, 2);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onGraveBreak(GraveBreakEvent event) {
+        Player player = event.getPlayer();
+        Location deathLocation = player != null ? player.getLocation() : null;
+
+        if (player == null) {
+            return;
+        }
+
+        boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
+        boolean isTownyEnabled = plugin.isTownyEnabled();
+        boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
+
+        boolean isWorldGuardMember = true;
+        if (isWorldGuardEnabled) {
+            isWorldGuardMember = plugin.getWorldGuard().canBreak(player, deathLocation);
+            List<String> regionKeys = plugin.getWorldGuard().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getWorldGuard().isMember(regionId, player)) {
+                    isWorldGuardMember = true;
+                    break;
+                }
+            }
+        }
+
+        boolean isTownyMember = true;
+        if (isTownyEnabled) {
+            isTownyMember = plugin.getTowny().isResident(player, deathLocation);
+        }
+
+        boolean isLandsMember = true;
+        if (isLandsEnabled) {
+            isLandsMember = plugin.getLands().canBreak(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
+        }
+
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canBreak(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
+            player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to break a grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);
         } else {
