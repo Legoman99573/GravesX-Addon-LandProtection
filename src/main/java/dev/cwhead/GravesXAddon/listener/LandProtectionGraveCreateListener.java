@@ -71,6 +71,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canCreateGrave(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
@@ -123,6 +131,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canTeleport(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
@@ -174,6 +190,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
@@ -225,6 +249,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canAutoLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
@@ -270,6 +302,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canWalkOver(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || isLandsMember) {
@@ -315,6 +355,14 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isLandsMember = true;
         if (isLandsEnabled) {
             isLandsMember = plugin.getLands().canProjectile(player, deathLocation);
+            List<String> regionKeys = plugin.getLands().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getLands().isMember(regionId, player)) {
+                    isLandsMember = true;
+                    break;
+                }
+            }
         }
 
         if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
