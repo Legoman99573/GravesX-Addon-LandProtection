@@ -13,3 +13,6 @@
 
 ## Towny
 Must be a member of a town, or else the grave will not spawn and instead drop all contents.
+
+## GriefPrevention
+Soon™
