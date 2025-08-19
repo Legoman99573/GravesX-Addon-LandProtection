@@ -20,8 +20,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * The {@code LandsImpl} class is responsible for integrating
- * the GravesX Addon with the Lands (paid) plugin.
+ * Lands (paid) integration.
  * <p>
  * It registers and manages custom role flags for grave-related actions
  * such as creation, looting, teleportation, and interaction.

@@ -49,6 +49,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -81,7 +82,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canCreateGrave(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to create a grave here.");
             event.setAddon(true);
             event.setCancelled(true);
@@ -109,6 +123,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -141,7 +156,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canTeleport(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to teleport to your grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);
@@ -168,6 +196,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -200,7 +229,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to open a grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);
@@ -227,6 +269,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -259,7 +302,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canAutoLoot(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to auto loot a grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);
@@ -280,6 +336,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -312,7 +369,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canWalkOver(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to auto loot a grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);
@@ -333,6 +403,7 @@ public class LandProtectionGraveCreateListener implements Listener {
         boolean isWorldGuardEnabled = plugin.isWorldGuardEnabled();
         boolean isTownyEnabled = plugin.isTownyEnabled();
         boolean isLandsEnabled = plugin.isLandsEnabled();
+        boolean isGriefDefenderEnabled = plugin.isGriefDefenderEnabled();
 
         boolean isWorldGuardMember = true;
         if (isWorldGuardEnabled) {
@@ -365,7 +436,20 @@ public class LandProtectionGraveCreateListener implements Listener {
             }
         }
 
-        if (!isWorldGuardMember || !isTownyMember || !isLandsMember) {
+        boolean isGriefDefenderMember = true;
+        if (isGriefDefenderEnabled) {
+            isGriefDefenderMember = plugin.getGriefDefender().canProjectile(player, deathLocation);
+            List<String> regionKeys = plugin.getGriefDefender().getRegionKeyList(deathLocation);
+            for (String regionKey : regionKeys) {
+                String regionId = regionKey.split("\\|")[2];
+                if (plugin.getGriefDefender().isMember(regionId, player)) {
+                    isGriefDefenderMember = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isWorldGuardMember || !isTownyMember || !isLandsMember || !isGriefDefenderMember) {
             player.sendMessage(ChatColor.GRAY + "☠ " + ChatColor.RED + "You must be a member of the region or have permission to use a projectile to destroy a grave in this region.");
             event.setAddon(true);
             event.setCancelled(true);

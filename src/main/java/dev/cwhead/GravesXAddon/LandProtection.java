@@ -2,6 +2,7 @@ package dev.cwhead.GravesXAddon;
 
 import com.ranull.graves.Graves;
 import dev.cwhead.GravesX.GravesXAPI;
+import dev.cwhead.GravesXAddon.integration.GriefDefenderImpl;
 import dev.cwhead.GravesXAddon.integration.LandsImpl;
 import dev.cwhead.GravesXAddon.integration.TownyImpl;
 import dev.cwhead.GravesXAddon.integration.WorldGuardImpl;
@@ -27,11 +28,15 @@ public final class LandProtection extends JavaPlugin {
 
     private TownyImpl towny;
 
-    private boolean worldGuardEnabled;
+    private GriefDefenderImpl griefDefender;
 
-    private boolean townyEnabled;
+    private boolean worldGuardEnabled = false;
 
-    private boolean landsEnabled;
+    private boolean townyEnabled = false;
+
+    private boolean landsEnabled = false;
+
+    private boolean griefDefenderEnabled = false;
 
     /**
      * Called when the plugin is loading. Tries to initialize the WorldGuard integration.
@@ -75,8 +80,6 @@ public final class LandProtection extends JavaPlugin {
                     getGravesXAPI().getGravesX().logStackTrace(e);
                     worldGuardEnabled = false;
                 }
-            } else {
-                worldGuardEnabled = false;
             }
 
             Plugin townyPlugin = getServer().getPluginManager().getPlugin("Towny");
@@ -91,8 +94,6 @@ public final class LandProtection extends JavaPlugin {
                     getGravesXAPI().getGravesX().logStackTrace(e);
                     townyEnabled = false;
                 }
-            } else {
-                townyEnabled = false;
             }
 
             Plugin landsPlugin = getServer().getPluginManager().getPlugin("Lands");
@@ -107,8 +108,24 @@ public final class LandProtection extends JavaPlugin {
                     getGravesXAPI().getGravesX().logStackTrace(e);
                     landsEnabled = false;
                 }
-            } else {
-                landsEnabled = false;
+            }
+
+            Plugin griefDefenderPlugin = getServer().getPluginManager().getPlugin("GriefDefender");
+
+            if (griefDefenderPlugin != null && griefDefenderPlugin.isEnabled()) {
+                try {
+                    griefDefender = new GriefDefenderImpl(this);
+                    griefDefenderEnabled = true;
+                } catch (Exception e) {
+                    getLogger().warning("Failed to hook into " + griefDefenderPlugin.getDescription().getName() + " v." + griefDefenderPlugin.getDescription().getVersion() + ". Town handling will be ignored.");
+                    getGravesXAPI().getGravesX().logStackTrace(e);
+                    griefDefenderEnabled = false;
+                }
+            }
+
+            if (!worldGuardEnabled && !townyEnabled && !landsEnabled && !griefDefenderEnabled) {
+                getLogger().warning("Failed to hook into any Land Protection Plugin. Disabling plugin...");
+                getServer().getPluginManager().disablePlugin(this);
             }
 
             getLogger().info("Loaded GravesX Addon: Land Protection");
@@ -160,6 +177,10 @@ public final class LandProtection extends JavaPlugin {
         return lands;
     }
 
+    public GriefDefenderImpl getGriefDefender() {
+        return griefDefender;
+    }
+
     public boolean isWorldGuardEnabled() {
         return worldGuardEnabled;
     }
@@ -170,5 +191,9 @@ public final class LandProtection extends JavaPlugin {
 
     public boolean isLandsEnabled() {
         return landsEnabled;
+    }
+
+    public boolean isGriefDefenderEnabled() {
+        return griefDefenderEnabled;
     }
 }
