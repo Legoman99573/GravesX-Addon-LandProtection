@@ -1,7 +1,7 @@
 # Formatting mode for all message strings below.
-#   - LEGACY:       Ampersand color codes (&7, &c, &l, etc.). Safest default.
+#   - LEGACY: Ampersand color codes (&7, &c, &l, etc.). Safest default.
 #   - MINI_MESSAGE: MiniMessage tags (<gray>, <red>, <bold>, etc.). Will be converted to legacy if supported.
-#   - MINE_DOWN:    MineDown syntax (also accepts legacy codes). Will be converted to legacy if supported.
+#   - MINE_DOWN: MineDown syntax (also accepts legacy codes). Will be converted to legacy if supported.
 # If the chosen format’s integration isn’t available at runtime, messages fall back to LEGACY parsing.
 format: LEGACY
 

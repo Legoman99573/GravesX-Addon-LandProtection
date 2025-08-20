@@ -103,13 +103,13 @@ public final class LandProtection extends JavaPlugin {
             java.io.File pluginsDir = getDataFolder().getParentFile();
             java.io.File gravesXDir = new java.io.File(pluginsDir, "GravesX");
 
-            java.io.File addonDir = new java.io.File(gravesXDir, "Addon");
+            java.io.File addonDir = new java.io.File(gravesXDir, "addon");
             if (!addonDir.exists()) addonDir.mkdir();
 
             java.io.File lpDir = new java.io.File(addonDir, "Land-Protection");
             if (!lpDir.exists()) lpDir.mkdir();
         } catch (Exception e) {
-            getLogger().severe("An issue occured while generating /plugins/GravesX/Addon/Land-Protection. Cause: " + e.getCause());
+            getLogger().severe("An issue occured while generating /plugins/GravesX/addon/Land-Protection. Cause: " + e.getCause());
             getGravesXAPI().getGravesX().logStackTrace(e);
             getLogger().severe("Disabling plugin...");
             getServer().getPluginManager().disablePlugin(this);
