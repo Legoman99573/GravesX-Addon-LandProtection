@@ -2,7 +2,7 @@
 
 ## You will need to disable worldguard implementation in config.yml. Not doing so may cause conflicts.
 
-## WorldGuard/Lands/GriefDefender Flags
+## WorldGuard/Lands/GriefDefender/GriefPrevention* Flags
 - gravesx-grave-create - Allows/Disallows a grave to be created in a region
 - gravesx-grave-teleport - Allows/Disallows teleporting to a grave in a region
 - gravesx-grave-loot - Allows/Disallows a grave to be looted in a region
@@ -15,4 +15,4 @@
 Must be a member of a town, or else the grave will not spawn and instead drop all contents.
 
 ## GriefPrevention
-Soon™
+For best experience, we recommend [GPFlags](https://modrinth.com/plugin/gpflags to enable the flags above. Without, it will fall back to trust instead.

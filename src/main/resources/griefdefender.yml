@@ -1,0 +1,70 @@
+# Purpose:
+#   Control how GravesX permissions are evaluated inside GriefDefender (GD) claims.
+#   The addon can consult GD custom flags (namespace is hard-coded to `gravesx`)
+#   and/or fall back to GD trust roles for each action.
+#
+# Evaluation overview:
+#   1) Depending on rules.evaluation-order, evaluate GD flags first or GD trust first.
+#   2) Flags:
+#        - TRUE → allow
+#        - FALSE → deny (can be made to override via rules.flags-deny-overrides)
+#        - UNSET → follow rules.missing-flag-allowed
+#   3) Trust fallback uses per-action levels under `trust.levels.*`.
+#   4) If outside any claim → follow rules.wilderness-allowed.
+#   5) If owner-bypass is enabled and the actor owns the claim → allow.
+#
+# Note:
+#   After editing this file, reload the addon (or restart the server) to apply changes.
+
+flags:
+  # Enable consulting GriefDefender flags (ids like "gravesx-grave-create").
+  # If disabled, the addon skips flag checks and goes straight to trust evaluation.
+  enabled: true
+
+rules:
+  # Non-player entities (armor stands, projectiles, mobs) pass checks automatically.
+  # Set to false to enforce checks for non-players too.
+  allow-non-player: true
+
+  # If the Location/world context is invalid (e.g., null or not loaded):
+  #   true → allow (fail-open)
+  #   false → deny (fail-closed)
+  invalid-location-allowed: true
+
+  # If flags are enabled but no explicit flag is found (UNDEFINED):
+  #   true → allow (fail-open)
+  #   false → deny (fail-closed)
+  missing-flag-allowed: true
+
+  # When the Location is not inside any GD claim (wilderness):
+  #   true → allow
+  #   false → deny
+  wilderness-allowed: true
+
+  # If the acting player is the owner of the claim, bypass all checks.
+  owner-bypass: true
+
+  # Order of evaluation:
+  #   FLAGS_THEN_TRUST → try flags first; if UNDEFINED, fall back to trust
+  #   TRUST_THEN_FLAGS → try trust first; if not sufficient, consult flags
+  evaluation-order: FLAGS_THEN_TRUST
+
+  # While reading flags, if any explicit DENY (FALSE) is encountered:
+  #   true → treat as DENY even if another path might ALLOW
+  #   false → do not give DENY precedence (rare)
+  flags-deny-overrides: true
+
+trust:
+  # Per-action fallback trust level used when evaluation reaches GD trust checks.
+  # Valid values:
+  #   ACCESSOR → minimal access (doors/buttons); also satisfied by CONTAINER/BUILDER/MANAGER
+  #   CONTAINER → open containers; also satisfied by BUILDER/MANAGER
+  #   BUILDER → place/break; also satisfied by MANAGER
+  levels:
+    create:     BUILDER     # creating graves is destructive → builder by default
+    teleport:   ACCESSOR    # typically harmless → accessor
+    loot:       CONTAINER   # inventory access → container
+    autoloot:   CONTAINER   # inventory access → container
+    walkover:   ACCESSOR    # benign → accessor
+    projectile: ACCESSOR    # interaction; tighten if desired
+    break:      BUILDER     # destructive → builder

@@ -1,0 +1,59 @@
+# Purpose:
+#   Control how the addon registers and evaluates WorldGuard (WG) StateFlags for GravesX.
+#   These flags are checked at a player’s location to decide whether an action is allowed.
+#
+# Evaluation overview (inside the addon):
+#   • For player entities:
+#       1) Query the WG StateFlag at the location for the specific action.
+#          - If the flag resolves to ALLOW → allow.
+#          - If the flag resolves to DENY → deny.
+#          - If the flag is absent/missing → follow rules.missing-flag-allowed.
+#       2) (Separately in your listener) membership may also be considered by your code,
+#          but that behavior is not configured here.
+#   • For non-player entities: see rules.allow-non-player.
+#
+# Notes:
+#   • Registering flags only creates them in WG’s registry if they don’t already exist.
+#     If a flag id already exists (e.g., from another plugin), the existing flag is used and
+#     its default cannot be changed here retroactively.
+#   • The per-flag defaults in this file apply only at registration time.
+#     Per-region values set in-game or by other plugins always take precedence at runtime.
+#   • After editing this file, reload the addon (or restart the server) to apply changes.
+
+flags:
+  # If false, the addon will NOT attempt to register custom WG flags at startup.
+  # Existing flags (if any) will still be looked up and used during evaluation.
+  register: true
+
+  # Default state used when creating a NEW StateFlag (only at registration time),
+  # unless overridden per-flag below in 'flags.list'.
+  # true → newly created StateFlags default to ALLOW
+  # false → newly created StateFlags default to DENY
+  default-state: true
+
+  # Per-flag default state overrides (applied only when a flag is first created).
+  # Keys are the exact flag ids. If WG already has a flag with that id, the existing
+  # one is reused and its default is left unchanged.
+  list:
+    gravesx-grave-autoloot: true
+    gravesx-grave-loot: true
+    gravesx-grave-create: true
+    gravesx-grave-teleport: true
+    gravesx-grave-walkover: true
+    gravesx-grave-projectile: true
+    gravesx-grave-break: true
+
+rules:
+  # Non-player entities (e.g., armor stands, projectiles, mobs) pass checks automatically.
+  # Set to false to enforce WG checks on non-player actors as well.
+  allow-non-player: true
+
+  # If the Location (or world) is invalid/unavailable:
+  #   true → allow (fail-open)
+  #   false → deny (fail-closed)
+  invalid-location-allowed: true
+
+  # If a required flag is missing (not registered, could not be resolved, or failed to load):
+  #   true → allow (fail-open)
+  #   false → deny (fail-closed)
+  missing-flag-allowed: true

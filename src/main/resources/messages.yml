@@ -1,0 +1,31 @@
+# Formatting mode for all message strings below.
+#   - LEGACY:       Ampersand color codes (&7, &c, &l, etc.). Safest default.
+#   - MINI_MESSAGE: MiniMessage tags (<gray>, <red>, <bold>, etc.). Will be converted to legacy if supported.
+#   - MINE_DOWN:    MineDown syntax (also accepts legacy codes). Will be converted to legacy if supported.
+# If the chosen format’s integration isn’t available at runtime, messages fall back to LEGACY parsing.
+format: LEGACY
+
+messages:
+  # Denial message template used whenever a player lacks permission/membership.
+  # Placeholders:
+  #   {action} — replaced with the human-readable action text from messages.actions.<key> below.
+  # For LEGACY mode, use '&' color codes. For MINI_MESSAGE or MINE_DOWN, write in that syntax.
+  deny: "&7☠ &cYou must be a member of the region or have permission to {action}"
+
+  # Human-readable phrases for each action. These are inserted into {action} in the template above.
+  # Edit freely without changing code.
+  actions:
+    # Shown when a player tries to create a grave where they’re not allowed.
+    create: "create a grave here."
+    # Shown when teleporting to a grave is blocked by a protection system.
+    teleport: "teleport to your grave in this region."
+    # Shown when opening a grave is not permitted.
+    open: "open a grave in this region."
+    # Shown when auto-looting a grave is not permitted.
+    auto_loot: "auto loot a grave in this region."
+    # Shown when simply walking over a grave is blocked (rare, but configurable).
+    walk_over: "walk over a grave in this region."
+    # Shown when using a projectile on a grave is blocked (e.g., trying to destroy/interact via projectile).
+    projectile: "use a projectile on a grave in this region."
+    # Shown when breaking a grave is not permitted.
+    break: "break a grave in this region."

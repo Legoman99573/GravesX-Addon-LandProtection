@@ -8,263 +8,179 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import dev.cwhead.GravesXAddon.LandProtection;
+import dev.cwhead.GravesXAddon.config.LandProtectionWorldGuardConfig;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * The {@code WorldGuardImpl} class is responsible for interacting with WorldGuard's region and flag systems
- * to determine if specific actions can be performed on grave-related entities and locations.
- * It handles creating, registering, and checking flags for actions such as grave creation, teleportation,
- * looting, and autolooting, as well as determining region memberships for players.
+ * WorldGuard integration: registers GravesX flags and evaluates region permissions/membership.
  */
 public class WorldGuardImpl {
-    private final LandProtection plugin;
-    private final WorldGuard worldGuard;
 
-    /**
-     * Constructs a {@code WorldGuardImpl} object.
-     *
-     * @param plugin the {@code LandProtection} plugin instance
-     */
+    private final LandProtection plugin;
+    private final WorldGuard wg;
+    private final FlagRegistry registry;
+    private final LandProtectionWorldGuardConfig config;
+
+    private final Map<String, StateFlag> registered = new LinkedHashMap<>();
+
+    public static final String F_AUTOLOOT = "gravesx-grave-autoloot";
+    public static final String F_LOOT = "gravesx-grave-loot";
+    public static final String F_CREATE = "gravesx-grave-create";
+    public static final String F_TELEPORT = "gravesx-grave-teleport";
+    public static final String F_WALKOVER = "gravesx-grave-walkover";
+    public static final String F_PROJECTILE = "gravesx-grave-projectile";
+    public static final String F_BREAK = "gravesx-grave-break";
+
     public WorldGuardImpl(LandProtection plugin) {
         this.plugin = plugin;
-        this.worldGuard = WorldGuard.getInstance();
-        registerMultipleFlags();
+        this.wg = WorldGuard.getInstance();
+        this.registry = wg.getFlagRegistry();
+        this.config = new LandProtectionWorldGuardConfig();
+        registerConfiguredFlags();
     }
 
-    /**
-     * Registers multiple flags for use with WorldGuard regions.
-     * Flags include those for controlling grave actions such as autoloot, loot, create, and teleport.
-     */
-    private void registerMultipleFlags() {
-        List<String> flagNames = List.of("gravesx-grave-autoloot", "gravesx-grave-loot", "gravesx-grave-create", "gravesx-grave-teleport", "gravesx-grave-walkover", "gravesx-grave-projectile", "gravesx-grave-break");
+    public void reloadConfig() {
+        config.reload();
+        registered.clear();
+        registerConfiguredFlags();
+    }
 
-        for (String flagName : flagNames) {
-            registerNewFlag(flagName);
+    private void registerConfiguredFlags() {
+        if (!config.shouldRegisterFlags()) {
+            plugin.getLogger().info("WorldGuard flag registration disabled by config.");
+            for (String id : defaultFlagOrder()) {
+                StateFlag f = getExistingFlag(id);
+                if (f != null) registered.put(id, f);
+            }
+            return;
+        }
+
+        boolean globalDefault = config.defaultFlagState();
+        Map<String, Boolean> perFlag = config.flagDefaults();
+
+        for (String id : defaultFlagOrder()) {
+            boolean def = perFlag.getOrDefault(id, globalDefault);
+            StateFlag f = registerOrGetFlag(id, def);
+            if (f != null) registered.put(id, f);
         }
     }
 
-    /**
-     * Registers a new state flag with WorldGuard.
-     * If a flag with the same name already exists, it returns the existing flag.
-     *
-     * @param flagName the name of the flag to register
-     * @return the registered or existing {@code StateFlag}
-     */
-    private StateFlag registerNewFlag(String flagName) {
+    private List<String> defaultFlagOrder() {
+        return Arrays.asList(
+                F_AUTOLOOT,
+                F_LOOT,
+                F_CREATE,
+                F_TELEPORT,
+                F_WALKOVER,
+                F_PROJECTILE,
+                F_BREAK
+        );
+    }
+
+    private StateFlag registerOrGetFlag(String name, boolean defaultState) {
         try {
-            StateFlag newFlag = new StateFlag(flagName, true);
-            worldGuard.getFlagRegistry().register(newFlag);
-            plugin.getLogger().info("Registered Flag " + flagName + " Successfully.");
-            return newFlag;
-        } catch (FlagConflictException exception) {
-            Flag<?> conflictingFlag = worldGuard.getFlagRegistry().get(flagName);
-            plugin.getLogger().warning("Failed to Register Flag " + flagName + ". Flag will be ignored.");
-            return (conflictingFlag instanceof StateFlag) ? (StateFlag) conflictingFlag : null;
+            StateFlag f = new StateFlag(name, defaultState);
+            registry.register(f);
+            plugin.getLogger().info("Registered flag: " + name + " (default=" + defaultState + ")");
+            return f;
+        } catch (FlagConflictException e) {
+            Flag<?> existing = registry.get(name);
+            if (existing instanceof StateFlag) {
+                plugin.getLogger().info("Flag already exists, using existing: " + name);
+                return (StateFlag) existing;
+            }
+            plugin.getLogger().warning("Flag name conflict (non-StateFlag): " + name + ". Flag will be ignored.");
+            return null;
         }
     }
 
-    /**
-     * Retrieves a {@code StateFlag} by its name.
-     *
-     * @param flagName the name of the flag to retrieve
-     * @return the {@code StateFlag} associated with the given name
-     */
-    private StateFlag getFlagName(String flagName) {
-        return (StateFlag) worldGuard.getFlagRegistry().get(flagName);
+    private StateFlag getExistingFlag(String name) {
+        Flag<?> f = registry.get(name);
+        return (f instanceof StateFlag) ? (StateFlag) f : null;
     }
 
-    /**
-     * Checks whether the specified entity (player) is allowed to create a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location where the grave would be created
-     * @return {@code true} if the entity is allowed to create a grave at the location, {@code false} otherwise
-     */
-    public boolean canCreateGrave(Entity entity, Location location) {
+    public boolean canCreateGrave(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_CREATE));
+    }
+
+    public boolean canTeleport(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_TELEPORT));
+    }
+
+    public boolean canLoot(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_LOOT));
+    }
+
+    public boolean canAutoLoot(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_AUTOLOOT));
+    }
+
+    public boolean canWalkOver(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_WALKOVER));
+    }
+
+    public boolean canProjectile(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_PROJECTILE));
+    }
+
+    public boolean canBreak(Entity entity, Location loc) {
+        return check(entity, loc, registered.get(F_BREAK));
+    }
+
+    private boolean check(Entity entity, Location loc, StateFlag flag) {
         if (!(entity instanceof Player)) {
-            return true;
+            return config.allowNonPlayer();
+        }
+        if (loc == null || loc.getWorld() == null) {
+            return config.invalidLocationAllowed();
+        }
+        if (flag == null) {
+            return config.missingFlagAllowed();
         }
 
-        StateFlag createFlag = getFlagName("gravesx-grave-create");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                createFlag);
+        return wg.getPlatform()
+                .getRegionContainer()
+                .createQuery()
+                .testState(
+                        BukkitAdapter.adapt(loc),
+                        WorldGuardPlugin.inst().wrapPlayer((Player) entity),
+                        flag
+                );
     }
 
-    /**
-     * Checks whether the specified entity (player) is allowed to teleport at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location where teleportation is being attempted
-     * @return {@code true} if the entity is allowed to teleport at the location, {@code false} otherwise
-     */
-    public boolean canTeleport(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
+    public boolean isMember(String regionId, Player player) {
+        if (player == null) return false;
 
-        StateFlag teleportFlag = getFlagName("gravesx-grave-teleport");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                teleportFlag);
-    }
-
-    /**
-     * Checks whether the specified entity (player) is allowed to loot a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location of the grave
-     * @return {@code true} if the entity is allowed to loot the grave at the location, {@code false} otherwise
-     */
-    public boolean canLoot(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
-
-        StateFlag lootFlag = getFlagName("gravesx-grave-loot");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                lootFlag);
-    }
-
-    /**
-     * Checks whether the specified entity (player) is allowed to autoloot a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location of the grave
-     * @return {@code true} if the entity is allowed to autoloot the grave at the location, {@code false} otherwise
-     */
-    public boolean canAutoLoot(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
-
-        StateFlag autoLootFlag = getFlagName("gravesx-grave-autoloot");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                autoLootFlag);
-    }
-
-    /**
-     * Checks whether the specified entity (player) is allowed to walk over a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location of the grave
-     * @return {@code true} if the entity is allowed to walk over the grave at the location, {@code false} otherwise
-     */
-    public boolean canWalkOver(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
-
-        StateFlag autoLootFlag = getFlagName("gravesx-grave-walkover");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                autoLootFlag);
-    }
-
-    /**
-     * Checks whether the specified entity (player) is allowed to use a projectile to loot a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location of the grave
-     * @return {@code true} if the entity is allowed to walk over the grave at the location, {@code false} otherwise
-     */
-    public boolean canProjectile(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
-
-        StateFlag projectileFlag = getFlagName("gravesx-grave-projectile");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                projectileFlag);
-    }
-
-    /**
-     * Checks whether the specified entity (player) is allowed to break a grave at the specified location.
-     *
-     * @param entity the entity to check (must be a player)
-     * @param location the location of the grave
-     * @return {@code true} if the entity is allowed to walk over the grave at the location, {@code false} otherwise
-     */
-    public boolean canBreak(Entity entity, Location location) {
-        if (!(entity instanceof Player)) {
-            return true;
-        }
-
-        StateFlag projectileFlag = getFlagName("gravesx-grave-break");
-
-        return worldGuard.getPlatform().getRegionContainer().createQuery().testState(
-                BukkitAdapter.adapt(location),
-                WorldGuardPlugin.inst().wrapPlayer((Player) entity),
-                projectileFlag);
-    }
-
-    /**
-     * Checks if the specified player is a member of the given region.
-     *
-     * @param region the name of the region
-     * @param player the player to check
-     * @return {@code true} if the player is a member of the region, {@code false} otherwise
-     */
-    public boolean isMember(String region, Player player) {
-        for (RegionManager regionManager : worldGuard.getPlatform().getRegionContainer().getLoaded()) {
-            if (regionManager.getRegions().containsKey(region)) {
-                ProtectedRegion protectedRegion = regionManager.getRegion(region);
-
-                if (protectedRegion != null) {
-                    return protectedRegion.isMember(WorldGuardPlugin.inst().wrapPlayer(player));
-                }
+        for (RegionManager mgr : wg.getPlatform().getRegionContainer().getLoaded()) {
+            ProtectedRegion pr = mgr.getRegion(regionId);
+            if (pr != null && pr.isMember(WorldGuardPlugin.inst().wrapPlayer(player))) {
+                return true;
             }
         }
-
         return false;
     }
 
-    /**
-     * Retrieves a list of region keys that apply to the specified location.
-     *
-     * @param location the location to check for applicable regions
-     * @return a list of region keys in the format "worldguard|<worldName>|<regionId>"
-     */
-    public List<String> getRegionKeyList(Location location) {
-        List<String> regionNameList = new ArrayList<>();
+    public List<String> getRegionKeyList(Location loc) {
+        List<String> out = new ArrayList<>();
+        if (loc == null || loc.getWorld() == null) return out;
 
-        if (location.getWorld() != null) {
-            RegionManager regionManager = worldGuard.getPlatform().getRegionContainer()
-                    .get(BukkitAdapter.adapt(location.getWorld()));
+        RegionManager mgr = wg.getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld()));
+        if (mgr == null) return out;
 
-            if (regionManager != null) {
-                ApplicableRegionSet applicableRegions = regionManager.getApplicableRegions(BlockVector3
-                        .at(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
-
-                for (ProtectedRegion protectedRegion : applicableRegions.getRegions()) {
-                    regionNameList.add("worldguard|" + location.getWorld().getName() + "|" + protectedRegion.getId());
-                }
-            }
+        ApplicableRegionSet ars = mgr.getApplicableRegions(BlockVector3.at(
+                loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()
+        ));
+        for (ProtectedRegion pr : ars.getRegions()) {
+            out.add("worldguard|" + loc.getWorld().getName() + "|" + pr.getId());
         }
-
-        return regionNameList;
+        return out;
     }
 }

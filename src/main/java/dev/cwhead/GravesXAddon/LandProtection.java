@@ -2,169 +2,165 @@ package dev.cwhead.GravesXAddon;
 
 import com.ranull.graves.Graves;
 import dev.cwhead.GravesX.GravesXAPI;
+import dev.cwhead.GravesXAddon.commands.LandProtectionCommand;
 import dev.cwhead.GravesXAddon.integration.GriefDefenderImpl;
+import dev.cwhead.GravesXAddon.integration.GriefPreventionImpl;
 import dev.cwhead.GravesXAddon.integration.LandsImpl;
 import dev.cwhead.GravesXAddon.integration.TownyImpl;
 import dev.cwhead.GravesXAddon.integration.WorldGuardImpl;
-import dev.cwhead.GravesXAddon.listener.LandProtectionGraveCreateListener;
+import dev.cwhead.GravesXAddon.listener.LandProtectionListener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.function.BiConsumer;
+
 /**
- * Main class for the Land Protection addon for GravesX. This plugin integrates with WorldGuard
- * to handle region-based permissions for grave creation, teleportation, opening, and looting.
- * It also ensures compatibility with GravesX and provides event handling for interactions
- * related to graveyards and WorldGuard regions.
+ * Main class for the Land Protection addon for GravesX.
  */
 public final class LandProtection extends JavaPlugin {
 
     private GravesXAPI gravesXAPI;
-
     private static LandProtection instance;
 
-    private LandsImpl lands;
-
     private WorldGuardImpl worldGuard;
-
     private TownyImpl towny;
-
+    private LandsImpl lands;
     private GriefDefenderImpl griefDefender;
+    private GriefPreventionImpl griefPrevention;
 
     private boolean worldGuardEnabled = false;
-
     private boolean townyEnabled = false;
-
     private boolean landsEnabled = false;
-
     private boolean griefDefenderEnabled = false;
+    private boolean griefPreventionEnabled = false;
 
-    /**
-     * Called when the plugin is loading. Tries to initialize the WorldGuard integration.
-     * If WorldGuard is not available, it silently ignores the failure.
-     */
     @Override
     public void onLoad() {
         try {
-           worldGuard = new WorldGuardImpl(this);
-           worldGuardEnabled = true;
-           getLogger().info("Registered WorldGuard Flags Successfully.");
+            final Plugin wg = getServer().getPluginManager().getPlugin("WorldGuard");
+            if (wg == null) {
+                return;
+            }
+            worldGuard = new WorldGuardImpl(this);
+            worldGuardEnabled = true;
         } catch (Exception ignored) {
-            getLogger().warning("Failed to register WorldGuard Flags. Flags will be ignored.");
-            worldGuardEnabled = false;
+            //ignored
         }
     }
 
-    /**
-     * Called when the plugin is enabled. This method hooks into GravesX and WorldGuard (if available),
-     * registers event listeners, and logs relevant information to the console.
-     *
-     * @throws IllegalStateException If the GravesX plugin is not found or enabled, the plugin will disable itself.
-     */
+
     @Override
     public void onEnable() {
-        Plugin gravesX = getServer().getPluginManager().getPlugin("GravesX");
-        if (gravesX != null && gravesX.isEnabled()) {
-            gravesXAPI = new GravesXAPI((Graves) gravesX);
+        final Plugin gravesX = getServer().getPluginManager().getPlugin("GravesX");
+        if (gravesX == null || !gravesX.isEnabled()) {
+            getLogger().severe("Plugin GravesX is either missing or not enabled. Disabling plugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
-            instance = this;
+        this.gravesXAPI = new GravesXAPI((Graves) gravesX);
+        instance = this;
 
-            Plugin worldGuard = getServer().getPluginManager().getPlugin("WorldGuard");
-
-            if (worldGuardEnabled && (worldGuard != null && worldGuard.isEnabled())) {
+        if (worldGuardEnabled) {
+            final Plugin wg = getServer().getPluginManager().getPlugin("WorldGuard");
+            if (wg != null && wg.isEnabled()) {
                 try {
-                    getServer().getPluginManager().registerEvents(new LandProtectionGraveCreateListener(this), this);
-                    getLogger().info("Hooked into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard Region handling will be handled by GravesX Addon: Land Protection");
-                    worldGuardEnabled = true;
+                    getServer().getPluginManager().registerEvents(new LandProtectionListener(this), this);
+                    logHookSuccess(wg);
                 } catch (Exception e) {
-                    getLogger().warning("Failed to hook into " + worldGuard.getDescription().getName() + " v." + worldGuard.getDescription().getVersion() + ". WorldGuard regions will be ignored.");
-                    getGravesXAPI().getGravesX().logStackTrace(e);
+                    logHookFailure(wg, e, "WorldGuard regions will be ignored.");
                     worldGuardEnabled = false;
                 }
+            } else {
+                worldGuardEnabled = false;
             }
+        }
 
-            Plugin townyPlugin = getServer().getPluginManager().getPlugin("Towny");
+        townyEnabled = hook("Towny", (pl, lp) -> lp.towny = new TownyImpl(lp));
+        landsEnabled = hook("Lands", (pl, lp) -> lp.lands = new LandsImpl(lp));
+        griefDefenderEnabled = hook("GriefDefender", (pl, lp) -> lp.griefDefender = new GriefDefenderImpl(lp));
+        griefPreventionEnabled = hook("GriefPrevention", (pl, lp) -> lp.griefPrevention = new GriefPreventionImpl(lp));
 
-            if (townyPlugin != null && townyPlugin.isEnabled()) {
-                try {
-                    getLogger().info("Hooked into " + townyPlugin.getDescription().getName() + " v." + townyPlugin.getDescription().getVersion() + ". Town handling will be handled by GravesX Addon: Land Protection");
-                    towny = new TownyImpl(this);
-                    townyEnabled = true;
-                } catch (Exception e) {
-                    getLogger().warning("Failed to hook into " + townyPlugin.getDescription().getName() + " v." + townyPlugin.getDescription().getVersion() + ". Town handling will be ignored.");
-                    getGravesXAPI().getGravesX().logStackTrace(e);
-                    townyEnabled = false;
-                }
-            }
+        if (!worldGuardEnabled && !townyEnabled && !landsEnabled && !griefDefenderEnabled && !griefPreventionEnabled) {
+            getLogger().warning("Failed to hook into any supported Land Protection plugin. Disabling plugin...");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
-            Plugin landsPlugin = getServer().getPluginManager().getPlugin("Lands");
+        ensureAddonDirs();
 
-            if (landsPlugin != null && landsPlugin.isEnabled()) {
-                try {
-                    getLogger().info("Hooked into " + landsPlugin.getDescription().getName() + " v." + landsPlugin.getDescription().getVersion() + ". Lands handling will be handled by GravesX Addon: Land Protection");
-                    lands = new LandsImpl(this);
-                    landsEnabled = true;
-                } catch (Exception e) {
-                    getLogger().warning("Failed to hook into " + landsPlugin.getDescription().getName() + " v." + landsPlugin.getDescription().getVersion() + ". Town handling will be ignored.");
-                    getGravesXAPI().getGravesX().logStackTrace(e);
-                    landsEnabled = false;
-                }
-            }
+        LandProtectionCommand cmd = new LandProtectionCommand(this);
+        if (getCommand("gxlp") != null) {
+            getCommand("gxlp").setExecutor(cmd);
+            getCommand("gxlp").setTabCompleter(cmd);
+        }
 
-            Plugin griefDefenderPlugin = getServer().getPluginManager().getPlugin("GriefDefender");
+        getLogger().info("Loaded GravesX Addon: Land Protection");
+    }
 
-            if (griefDefenderPlugin != null && griefDefenderPlugin.isEnabled()) {
-                try {
-                    griefDefender = new GriefDefenderImpl(this);
-                    griefDefenderEnabled = true;
-                } catch (Exception e) {
-                    getLogger().warning("Failed to hook into " + griefDefenderPlugin.getDescription().getName() + " v." + griefDefenderPlugin.getDescription().getVersion() + ". Town handling will be ignored.");
-                    getGravesXAPI().getGravesX().logStackTrace(e);
-                    griefDefenderEnabled = false;
-                }
-            }
+    private void ensureAddonDirs() {
+        try {
+            java.io.File pluginsDir = getDataFolder().getParentFile();
+            java.io.File gravesXDir = new java.io.File(pluginsDir, "GravesX");
 
-            if (!worldGuardEnabled && !townyEnabled && !landsEnabled && !griefDefenderEnabled) {
-                getLogger().warning("Failed to hook into any Land Protection Plugin. Disabling plugin...");
-                getServer().getPluginManager().disablePlugin(this);
-            }
+            java.io.File addonDir = new java.io.File(gravesXDir, "Addon");
+            if (!addonDir.exists()) addonDir.mkdir();
 
-            getLogger().info("Loaded GravesX Addon: Land Protection");
-        } else {
-            getLogger().severe("Plugin GravesX is either missing or not enabled. Disabling Plugin.");
+            java.io.File lpDir = new java.io.File(addonDir, "Land-Protection");
+            if (!lpDir.exists()) lpDir.mkdir();
+        } catch (Exception e) {
+            getLogger().severe("An issue occured while generating /plugins/GravesX/Addon/Land-Protection. Cause: " + e.getCause());
+            getGravesXAPI().getGravesX().logStackTrace(e);
+            getLogger().severe("Disabling plugin...");
+            getServer().getPluginManager().disablePlugin(this);
         }
     }
 
-    /**
-     * Called when the plugin is disabled. Logs a message indicating that the Land Protection addon is disabled.
-     */
     @Override
     public void onDisable() {
         getLogger().info("Land Protection Addon Disabled.");
     }
 
-    /**
-     * Gets the GravesXAPI instance associated with the plugin. This API provides access to GravesX functionality.
-     *
-     * @return The GravesXAPI instance.
-     */
+    private boolean hook(String pluginName, BiConsumer<Plugin, LandProtection> initializer) {
+        final Plugin target = getServer().getPluginManager().getPlugin(pluginName);
+        if (target == null || !target.isEnabled()) return false;
+
+        try {
+            initializer.accept(target, this);
+            logHookSuccess(target);
+            return true;
+        } catch (Exception e) {
+            logHookFailure(target, e, pluginName + " handling will be ignored.");
+            return false;
+        }
+    }
+
+    private void logHookSuccess(Plugin pl) {
+        getLogger().info("Hooked into " + pl.getDescription().getName() +
+                " v" + pl.getDescription().getVersion() + ".");
+    }
+
+    private void logHookFailure(Plugin pl, Exception e, String extra) {
+        getLogger().warning("Failed to hook into " + pl.getDescription().getName() +
+                " v" + pl.getDescription().getVersion() + ". " + extra);
+        try {
+            if (getGravesXAPI() != null && getGravesXAPI().getGravesX() != null) {
+                getGravesXAPI().getGravesX().logStackTrace(e);
+            }
+        } catch (Throwable ignored) {
+            // ignored
+        }
+    }
+
+
     public GravesXAPI getGravesXAPI() {
         return gravesXAPI;
     }
 
-    /**
-     * Gets the singleton instance of the LandProtection plugin.
-     *
-     * @return The singleton instance of the LandProtection plugin.
-     */
     public static LandProtection getInstance() {
         return instance;
     }
 
-    /**
-     * Gets the WorldGuardImpl instance, which handles WorldGuard integration for this plugin.
-     *
-     * @return The WorldGuardImpl instance.
-     */
     public WorldGuardImpl getWorldGuard() {
         return worldGuard;
     }
@@ -181,6 +177,10 @@ public final class LandProtection extends JavaPlugin {
         return griefDefender;
     }
 
+    public GriefPreventionImpl getGriefPrevention() {
+        return griefPrevention;
+    }
+
     public boolean isWorldGuardEnabled() {
         return worldGuardEnabled;
     }
@@ -195,5 +195,45 @@ public final class LandProtection extends JavaPlugin {
 
     public boolean isGriefDefenderEnabled() {
         return griefDefenderEnabled;
+    }
+
+    public boolean isGriefPreventionEnabled() {
+        return griefPreventionEnabled;
+    }
+
+    public void reloadAllConfigs() {
+        try {
+            if (worldGuard != null)
+                worldGuard.reloadConfig();
+        } catch (Throwable ignored) {
+            //ignored
+        }
+
+        try {
+            if (towny != null)
+                towny.reloadConfig();
+        } catch (Throwable ignored) {
+            //ignored
+        }
+
+        try {
+            if (lands != null)
+                lands.reloadConfig();
+        } catch (Throwable ignored) {
+            //ignored
+        }
+        try {
+            if (griefDefender != null)
+                griefDefender.reloadConfig();
+        } catch (Throwable ignored) {
+            //ignored
+        }
+
+        try {
+            if (griefPrevention != null)
+                griefPrevention.reloadConfig();
+        } catch (Throwable ignored) {
+            //ignored
+        }
     }
 }

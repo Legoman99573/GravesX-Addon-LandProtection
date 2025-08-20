@@ -1,0 +1,36 @@
+# Purpose:
+#   Decide which Towny plot types (TownBlockType enum IDs) grant permission to
+#   players who are allies or total outsiders when interacting with GravesX features.
+#
+# How it’s evaluated (typical flow in the addon):
+#   1) If rules.residents-always-allowed = true and the player is a Resident of the plot’s town → ALLOW.
+#   2) Else, if the player is considered an “ally” (per Towny relations):
+#        - If the plot’s type is in ally-allowed-types → ALLOW.
+#   3) Else (player is an outsider / neither resident nor ally):
+#        - If the plot’s type is in outsider-allowed-types → ALLOW.
+#   4) Else, no allowance is granted by Towny (other integrations may still allow/deny).
+#
+# Notes:
+#   • Use EXACT Towny TownBlockType enum IDs (NOT display names). Common examples include:
+#       RESIDENTIAL, COMMERCIAL, EMBASSY, ARENA, FARM, INN, JAIL, WILDERNESS (do NOT use WILDERNESS here; see rules.wilderness-allowed)
+#     Refer to your Towny version for the definitive list.
+#   • If a list is empty, that group (ally/outsider) receives NO special allowance from Towny by plot type.
+#   • These lists apply uniformly to all GravesX actions; fine-grained per-action rules (if desired) should be
+#     implemented in your code/config beyond this file.
+#
+# Allies get access on these plot types.
+ally-allowed-types: [EMBASSY, ARENA]
+
+# Outsiders (neither residents nor allies) get access on these plot types.
+outsider-allowed-types: []
+
+rules:
+  # If the location is not inside any Town (wilderness):
+  #   true → allow (Towny imposes no restriction in wilderness)
+  #   false → deny by Towny in wilderness
+  wilderness-allowed: true
+
+  # If the acting player is a Resident of the town that owns the plot:
+  #   true → always allow (bypass ally/outsider lists)
+  #   false → require the plot type to be listed above (ally/outsider) to allow
+  residents-always-allowed: true

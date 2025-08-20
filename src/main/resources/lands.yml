@@ -1,0 +1,77 @@
+# Purpose:
+#   This file controls how the addon talks to the Lands plugin:
+#   - Which custom GravesX flags are registered and checked
+#   - What to do when context is missing (fail-open vs fail-closed)
+#   - (Optional) Extra gating by Lands roles/“buckets” per action
+#
+#   ACTION KEYS used in this file:
+#     create, teleport, loot, autoloot, walkover, projectile, break
+#
+# EVALUATION OVERVIEW (for a player at a location inside a Land/Area):
+#   1) Flag check (if the flag for that action is enabled & registered):
+#        - If the flag explicitly ALLOWS → allow.
+#        - If the flag explicitly DENIES → deny.
+#        - If the flag is missing/disabled → follow rules.missing-flag-allowed.
+#   2) (Optional) Role gating (roles.enabled = true):
+#        - If an action has a non-empty allow-list → player must match at least one listed bucket/role.
+#        - If the list is empty or the action key is absent → no extra role restriction is applied.
+#   3) Outside of any land (wilderness) → follow rules.wilderness-allowed.
+#
+# Toggle registration of each GravesX role flag in Lands (by flag id).
+# Disable a flag if you never want that action to be controlled by Lands flags.
+# If you disable a flag, behavior falls back to 'rules.missing-flag-allowed' for that action.
+flags:
+  gravesx-grave-autoloot: true
+  gravesx-grave-loot: true
+  gravesx-grave-create: true
+  gravesx-grave-teleport: true
+  gravesx-grave-walkover: true
+  gravesx-grave-projectile: true
+  gravesx-grave-break: true
+
+rules:
+  # Non-player actors (e.g., armor stands, item projectiles, mobs) pass checks automatically.
+  # Set to false to also enforce on non-players.
+  allow-non-player: true
+
+  # If the location is invalid (null world, unloaded, etc.), treat as allowed (fail-open).
+  # Set to false to fail-closed (deny when context is missing).
+  invalid-location-allowed: true
+
+  # If the relevant flag is disabled or cannot be resolved at runtime:
+  #  - true  → treat as allowed (fail-open)
+  #  - false → treat as denied (fail-closed)
+  missing-flag-allowed: true
+
+  # When no land/area is present at the location (wilderness):
+  #  - true  → allow the action in wilderness
+  #  - false → deny in wilderness
+  wilderness-allowed: true
+
+# Matching logic:
+#   - A player matches OWNER if they own the Land/Area.
+#   - A player matches TRUSTED if they are trusted in the Land/Area.
+#   - A player matches VISITOR if they are neither owner nor trusted (i.e., generic visitor).
+#   - Named roles are matched by the player’s assigned Lands role at that location.
+#
+# If a list is empty ([]) or the action key is missing entirely, that action has NO additional role gating.
+roles:
+  # Master switch for role gating (applies to all actions below).
+  enabled: true
+
+  # Allow-lists per action. Player must match at least ONE entry in the list to pass.
+  # Examples below are sensible defaults; adjust to your policy.
+  allow:
+    # Creating a grave usually needs build-level access.
+    create: [OWNER, TRUSTED]
+    # Teleporting to a grave is often harmless; leave open by default.
+    teleport: []
+    # Looting & autolooting are inventory-affecting; limit to trusted by default.
+    loot: [OWNER, TRUSTED]
+    autoloot: [OWNER, TRUSTED]
+    # Walking over is benign; include visitors by default.
+    walkover: [OWNER, TRUSTED, VISITOR]
+    # Projectile interactions can be destructive; restrict by default.
+    projectile: [OWNER, TRUSTED]
+    # Breaking a grave is destructive; owner by default.
+    break: [OWNER]

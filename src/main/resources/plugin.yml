@@ -17,3 +17,46 @@ soft-depend:
   - Towny
   - GriefPrevention
   - Lands
+  - GriefPrevention
+  - Flags
+  - GPFlags
+  - GriefPreventionFlags
+
+commands:
+  gxlp:
+    description: Executes GravesXAddon-LandProtection based commands
+    aliases:
+      - gravesx-landprotection
+      - gravesx-landp
+      - gravesx-lprotection
+      - gravesx-lp
+      - graves-landprotection
+      - graves-landp
+      - graves-lprotection
+      - graves-lp
+      - gx-lp
+      - gx-landprotection
+      - gx-landp
+
+permissions:
+  gravesx.landprotection.*:
+    description: All Land Protection addon permissions
+    default: op
+    children:
+      gravesx.landprotection.commands: true
+
+  gravesx.landprotection.commands:
+    description: Allows users to execute GravesX-LandProtection commands
+    default: op
+    children:
+      gravesx.landprotection.reload: true
+      gravesx.landprotection.debug: true
+
+  gravesx.landprotection.reload:
+    default: op
+    description: Allows users to execute GravesX-LandProtection reload command
+
+  gravesx.landprotection.debug:
+    default: op
+    description: Allows users to execute GravesX-LandProtection debug command
+

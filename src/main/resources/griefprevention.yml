@@ -1,0 +1,93 @@
+# Purpose:
+#   This file controls how the addon works with GriefPrevention (GP) and its flag ecosystems:
+#   - "Flags" (successor API; plugin name: Flags)
+#   - "GPFlags" (legacy; plugin name: GPFlags or GriefPreventionFlags)
+#
+# Evaluation overview for a player acting inside a GP claim:
+#   1) Depending on 'evaluation-order', evaluate Flags/GPFlags first or GP trust first.
+#   2) Flags/GPFlags: explicit ALLOW → allow; explicit DENY → deny; no setting → see rules.missing-flag-allowed.
+#   3) Trust fallback (ACCESSOR/CONTAINER/BUILDER), action-specific via trust.levels.*.
+#   4) If the location is wilderness → follow rules.wilderness-allowed.
+#   5) Owner bypass (if enabled) allows action regardless of flags/trust.
+#
+
+# Control whether to use and/or register flag integrations.
+flags:
+  # Use the "Flags" successor API if the plugin is present (plugin id: Flags).
+  # Set to false to ignore the Flags plugin even if installed.
+  use-flags: true
+
+  # Use the legacy GPFlags API if a legacy plugin is present (GPFlags or GriefPreventionFlags).
+  # Set to false to ignore legacy GPFlags even if installed.
+  use-gpflags: true
+
+  # Attempt to register flags with each API (only if the corresponding 'use-*' is true AND the plugin is present).
+  # Disable if you prefer to pre-create flags or manage them externally.
+  register:
+    flags: true # Register with successor "Flags"
+    gpflags: true # Register with legacy "GPFlags"
+
+    # Default states used ONLY when registering via successor "Flags".
+    # GPFlags does not support defaults on register—admins must set values in-game or via its config.
+    #
+    # Meaning of values here (Flags only):
+    #   true  → default ALLOW unless overridden per-claim
+    #   false → default DENY  unless overridden per-claim
+    # Remove or comment a key to let the Flags plugin’s own default behavior apply.
+  defaults:
+    gravesx-grave-create: false # Creating a grave (typically restrict by default)
+    gravesx-grave-teleport: true # Teleport to grave
+    gravesx-grave-loot: true # Open/loot grave
+    gravesx-grave-autoloot: true # Auto-loot on interaction
+    gravesx-grave-walkover: true # Walking over a grave
+    gravesx-grave-projectile: false # Projectile impacting a grave (often restrict)
+    gravesx-grave-break: false # Breaking a grave (often restrict)
+
+rules:
+  # Non-player entities (armor stands, projectiles, mobs) pass checks automatically.
+  # Set to false to enforce checks for non-players too.
+  allow-non-player: true
+
+  # If the location/world context is invalid (e.g., null/unloaded), treat as allowed (fail-open).
+  # Set to false to fail-closed (deny when context is missing).
+  invalid-location-allowed: true
+
+  # If flag integrations are unavailable/disabled or a flag cannot be resolved:
+  #   true  → treat as allowed (fail-open)
+  #   false → treat as denied  (fail-closed)
+  missing-flag-allowed: true
+
+  # When no claim is present at the location (wilderness):
+  #   true  → allow the action
+  #   false → deny in wilderness
+  wilderness-allowed: true
+
+  # If the acting player is the owner of the claim, bypass all checks.
+  owner-bypass: true
+
+  # Order of evaluation between flags and trust:
+  #   FLAGS_THEN_TRUST → evaluate Flags/GPFlags first; if UNDEFINED, fall back to trust
+  #   TRUST_THEN_FLAGS → evaluate GP trust first; if not sufficient, consult Flags/GPFlags
+  evaluation-order: FLAGS_THEN_TRUST
+
+  # While reading flags, if any explicit DENY is encountered:
+  #   true  → treat as DENY even if another flag might ALLOW
+  #   false → do not give DENY precedence (rare)
+  flags-deny-overrides: true
+
+trust:
+  # Per-action fallback trust level used when evaluation reaches GP trust checks.
+  # Valid values:
+  #   ACCESSOR  → minimal access (use buttons/doors), also satisfied by CONTAINER/BUILDER/MANAGER
+  #   CONTAINER → open containers, also satisfied by BUILDER/MANAGER
+  #   BUILDER   → place/break, also satisfied by MANAGER
+  #
+  # Tip: Pick stricter levels for destructive actions (e.g., create/break).
+  levels:
+    create: BUILDER
+    teleport: ACCESSOR
+    loot: CONTAINER
+    autoloot: CONTAINER
+    walkover: ACCESSOR
+    projectile: ACCESSOR
+    break: BUILDER
