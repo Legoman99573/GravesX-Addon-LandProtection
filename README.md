@@ -16,3 +16,11 @@ Must be a member of a town, or else the grave will not spawn and instead drop al
 
 ## GriefPrevention
 For best experience, we recommend [GPFlags](https://modrinth.com/plugin/gpflags to enable the flags above. Without, it will fall back to trust instead.
+
+## Commands
+- /gxlp - Prints Debug Information
+- /gxlp reload - Reloads all configurations
+
+## Permissions
+- gravesx.landprotection.debug - Allows access to `/gxlp`
+- gravesx.landprotection.reload - Allows access to `/gxlp reload`
