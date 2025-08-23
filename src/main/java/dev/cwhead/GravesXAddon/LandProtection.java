@@ -3,12 +3,15 @@ package dev.cwhead.GravesXAddon;
 import com.ranull.graves.Graves;
 import dev.cwhead.GravesX.GravesXAPI;
 import dev.cwhead.GravesXAddon.commands.LandProtectionCommand;
+import dev.cwhead.GravesXAddon.config.LandProtectionMainConfig;
 import dev.cwhead.GravesXAddon.integration.GriefDefenderImpl;
 import dev.cwhead.GravesXAddon.integration.GriefPreventionImpl;
 import dev.cwhead.GravesXAddon.integration.LandsImpl;
 import dev.cwhead.GravesXAddon.integration.TownyImpl;
 import dev.cwhead.GravesXAddon.integration.WorldGuardImpl;
 import dev.cwhead.GravesXAddon.listener.LandProtectionListener;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,6 +24,7 @@ public final class LandProtection extends JavaPlugin {
 
     private GravesXAPI gravesXAPI;
     private static LandProtection instance;
+    private LandProtectionMainConfig mainConfig;
 
     private WorldGuardImpl worldGuard;
     private TownyImpl towny;
@@ -87,6 +91,8 @@ public final class LandProtection extends JavaPlugin {
             return;
         }
 
+        registerMetrics();
+
         ensureAddonDirs();
 
         LandProtectionCommand cmd = new LandProtectionCommand(this);
@@ -96,6 +102,18 @@ public final class LandProtection extends JavaPlugin {
         }
 
         getLogger().info("Loaded GravesX Addon: Land Protection");
+    }
+
+    private void registerMetrics() {
+        if (getMainConfig().metricsEnabled()) {
+            Metrics metrics = new Metrics(this, 120633);
+
+            metrics.addCustomChart(new SimplePie("griefdefender", () -> String.valueOf(isGriefDefenderEnabled()).toLowerCase()));
+            metrics.addCustomChart(new SimplePie("griefprevention", () -> String.valueOf(isGriefPreventionEnabled()).toLowerCase()));
+            metrics.addCustomChart(new SimplePie("towny", () -> String.valueOf(isTownyEnabled()).toLowerCase()));
+            metrics.addCustomChart(new SimplePie("lands", () -> String.valueOf(isLandsEnabled()).toLowerCase()));
+            metrics.addCustomChart(new SimplePie("worldguard", () -> String.valueOf(isWorldGuardEnabled()).toLowerCase()));
+        }
     }
 
     private void ensureAddonDirs() {
@@ -199,6 +217,10 @@ public final class LandProtection extends JavaPlugin {
 
     public boolean isGriefPreventionEnabled() {
         return griefPreventionEnabled;
+    }
+
+    public LandProtectionMainConfig getMainConfig() {
+        return mainConfig;
     }
 
     public void reloadAllConfigs() {

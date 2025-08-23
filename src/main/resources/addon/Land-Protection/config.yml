@@ -1,0 +1,5 @@
+# Purpose:
+#   General settings for the GravesX Land-Protection addon.
+#   Edit these values and restart or reload the plugin to apply.
+#
+metrics: true   # Enable anonymous usage metrics reporting to bStats
