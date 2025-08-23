@@ -48,7 +48,7 @@ public final class LandProtection extends JavaPlugin {
             worldGuard = new WorldGuardImpl(this);
             worldGuardEnabled = true;
         } catch (Exception ignored) {
-            //ignored
+            // ignored as presume plugin doesn't exist or errors out
         }
     }
 
