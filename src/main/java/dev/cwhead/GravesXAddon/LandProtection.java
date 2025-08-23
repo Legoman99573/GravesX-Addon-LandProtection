@@ -3,6 +3,7 @@ package dev.cwhead.GravesXAddon;
 import com.ranull.graves.Graves;
 import dev.cwhead.GravesX.GravesXAPI;
 import dev.cwhead.GravesXAddon.commands.LandProtectionCommand;
+import dev.cwhead.GravesXAddon.config.LandProtectionGriefDefenderConfig;
 import dev.cwhead.GravesXAddon.config.LandProtectionMainConfig;
 import dev.cwhead.GravesXAddon.integration.GriefDefenderImpl;
 import dev.cwhead.GravesXAddon.integration.GriefPreventionImpl;
@@ -90,6 +91,8 @@ public final class LandProtection extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        this.mainConfig = new LandProtectionMainConfig();
 
         registerMetrics();
 
