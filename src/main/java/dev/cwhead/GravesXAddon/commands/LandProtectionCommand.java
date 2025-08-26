@@ -45,11 +45,11 @@ public class LandProtectionCommand implements CommandExecutor, TabCompleter {
             }
 
             sender.sendMessage(ChatColor.RED + "☠ " + ChatColor.GOLD + "GravesXAddon-LandProtection Debug Information");
-            sender.sendMessage(ChatColor.GOLD + "GriefPrevention: " + (plugin.isGriefPreventionEnabled() ? ChatColor.GREEN + "Hooked" : ChatColor.RED + "Not Hooked"));
-            sender.sendMessage(ChatColor.GOLD + "GriefDefender: " + (plugin.isGriefDefenderEnabled() ? ChatColor.GREEN + "Hooked" : ChatColor.RED + "Not Hooked"));
-            sender.sendMessage(ChatColor.GOLD + "Lands: " + (plugin.isLandsEnabled() ? ChatColor.GREEN + "Hooked" : ChatColor.RED + "Not Hooked"));
-            sender.sendMessage(ChatColor.GOLD + "Towny: " + (plugin.isTownyEnabled() ? ChatColor.GREEN + "Hooked" : ChatColor.RED + "Not Hooked"));
-            sender.sendMessage(ChatColor.GOLD + "WorldGuard: " + (plugin.isWorldGuardEnabled() ? ChatColor.GREEN + "Hooked" : ChatColor.RED + "Not Hooked"));
+            sender.sendMessage(ChatColor.GOLD + "GriefPrevention: " + (plugin.isGriefPreventionEnabled() ? ChatColor.GREEN + "Hooked to GriefPrevention v." + plugin.getServer().getPluginManager().getPlugin("GriefPrevention").getDescription().getVersion() : ChatColor.RED + "Not Hooked"));
+            sender.sendMessage(ChatColor.GOLD + "GriefDefender: " + (plugin.isGriefDefenderEnabled() ? ChatColor.GREEN + "Hooked to GriefDefender v." + plugin.getServer().getPluginManager().getPlugin("GriefDefender").getDescription().getVersion() : ChatColor.RED + "Not Hooked"));
+            sender.sendMessage(ChatColor.GOLD + "Lands: " + (plugin.isLandsEnabled() ? ChatColor.GREEN + "Hooked to Lands v." + plugin.getServer().getPluginManager().getPlugin("Lands").getDescription().getVersion() : ChatColor.RED + "Not Hooked"));
+            sender.sendMessage(ChatColor.GOLD + "Towny: " + (plugin.isTownyEnabled() ? ChatColor.GREEN + "Hooked to Towny v." + plugin.getServer().getPluginManager().getPlugin("Towny").getDescription().getVersion() : ChatColor.RED + "Not Hooked"));
+            sender.sendMessage(ChatColor.GOLD + "WorldGuard: " + (plugin.isWorldGuardEnabled() ? ChatColor.GREEN + "Hooked to WorldGuard v." + plugin.getServer().getPluginManager().getPlugin("WorldGuard").getDescription().getVersion() : ChatColor.RED + "Not Hooked"));
             return true;
         }
 
