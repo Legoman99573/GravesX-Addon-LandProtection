@@ -2,9 +2,11 @@ package dev.cwhead.GravesXAddon.listener.dependencies;
 
 import com.ranull.graves.type.Grave;
 import dev.cwhead.GravesXAddon.LandProtection;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.events.ClaimPermissionCheckEvent;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -26,9 +28,10 @@ public class GriefPreventionListener implements Listener {
         Grave grave = plugin.getGravesXAPI()
                 .getGravesX().getBlockManager().getGraveFromBlock(location.getBlock());
 
+        if (grave == null) return;
+
         if (location == grave.getLocationDeath()) {
-            //e.setCancelled(true);
-            e.setDenialReason(() -> "You can’t do that to a grave.");
+            e.setDenialReason(null);
         }
     }
 }
