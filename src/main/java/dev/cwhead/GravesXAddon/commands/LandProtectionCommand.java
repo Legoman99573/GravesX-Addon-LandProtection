@@ -27,7 +27,7 @@ public class LandProtectionCommand implements CommandExecutor, TabCompleter {
     private boolean hasPerm(CommandSender sender, String perm) {
         if (sender instanceof Player) {
             Player p = ((Player) sender);
-            return plugin.getGravesXAPI().getGravesX().hasGrantedPermission(perm, p);
+            return plugin.getGravesXAPI().plugin().hasGrantedPermission(perm, p.getPlayer());
         }
         return true;
     }

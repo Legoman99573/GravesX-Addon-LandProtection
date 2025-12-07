@@ -45,7 +45,7 @@ public class LandProtectionMessagesConfig {
 
     private String toLegacy(String raw) {
         Format fmt = format();
-        var im = plugin.getGravesXAPI().getGravesX().getIntegrationManager();
+        var im = plugin.getGravesXAPI().plugin().getIntegrationManager();
 
         try {
             if (fmt == Format.MINI_MESSAGE && im.hasMiniMessage()) {

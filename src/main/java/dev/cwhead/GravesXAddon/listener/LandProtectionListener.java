@@ -1,6 +1,6 @@
 package dev.cwhead.GravesXAddon.listener;
 
-import com.ranull.graves.event.*;
+import dev.cwhead.GravesX.event.*;
 import dev.cwhead.GravesXAddon.LandProtection;
 import dev.cwhead.GravesXAddon.config.LandProtectionMessagesConfig;
 import org.bukkit.Location;
@@ -41,12 +41,11 @@ public class LandProtectionListener implements Listener {
 
     private void deny(Player p, Action a, CancellableGravesEvent e) {
         p.sendMessage(messages.denyMessageForAction(a.key, a.defaultText));
-        e.setAddon(true);
         e.setCancelled(true);
     }
 
     private void debugAllowed(Player p, Location loc, Action a) {
-        plugin.getGravesXAPI().getGravesX().debugMessage(p.getDisplayName() + " can " + a.name().toLowerCase() + " at: " + loc, 2);
+        plugin.getGravesXAPI().plugin().debugMessage(p.getDisplayName() + " can " + a.name().toLowerCase() + " at: " + loc, 2);
     }
 
     /**
@@ -281,92 +280,35 @@ public class LandProtectionListener implements Listener {
     }
 
     private interface CancellableGravesEvent {
-        void setAddon(boolean addon);
         void setCancelled(boolean cancelled);
     }
 
     private static CancellableGravesEvent adapt(GraveCreateEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveTeleportEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveOpenEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveAutoLootEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveWalkOverEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveProjectileHitEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private static CancellableGravesEvent adapt(GraveBreakEvent e) {
-        return new CancellableGravesEvent() {
-            public void setAddon(boolean addon) {
-                e.setAddon(addon);
-            }
-
-            public void setCancelled(boolean c) {
-                e.setCancelled(c);
-            }
-        };
+        return e::setCancelled;
     }
 
     private void deny(Player p, GraveCreateEvent e) {

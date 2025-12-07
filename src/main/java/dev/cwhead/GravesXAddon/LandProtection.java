@@ -1,9 +1,8 @@
 package dev.cwhead.GravesXAddon;
 
 import com.ranull.graves.Graves;
-import dev.cwhead.GravesX.GravesXAPI;
+import dev.cwhead.GravesX.api.GravesXAPI;
 import dev.cwhead.GravesXAddon.commands.LandProtectionCommand;
-import dev.cwhead.GravesXAddon.config.LandProtectionGriefDefenderConfig;
 import dev.cwhead.GravesXAddon.config.LandProtectionMainConfig;
 import dev.cwhead.GravesXAddon.integration.GriefDefenderImpl;
 import dev.cwhead.GravesXAddon.integration.GriefPreventionImpl;
@@ -131,7 +130,7 @@ public final class LandProtection extends JavaPlugin {
             if (!lpDir.exists()) lpDir.mkdir();
         } catch (Exception e) {
             getLogger().severe("An issue occured while generating /plugins/GravesX/addon/Land-Protection. Cause: " + e.getCause());
-            getGravesXAPI().getGravesX().logStackTrace(e);
+            getGravesXAPI().plugin().logStackTrace(e);
             getLogger().severe("Disabling plugin...");
             getServer().getPluginManager().disablePlugin(this);
         }
@@ -165,8 +164,8 @@ public final class LandProtection extends JavaPlugin {
         getLogger().warning("Failed to hook into " + pl.getDescription().getName() +
                 " v" + pl.getDescription().getVersion() + ". " + extra);
         try {
-            if (getGravesXAPI() != null && getGravesXAPI().getGravesX() != null) {
-                getGravesXAPI().getGravesX().logStackTrace(e);
+            if (getGravesXAPI() != null) {
+                getGravesXAPI().plugin().logStackTrace(e);
             }
         } catch (Throwable ignored) {
             // ignored
