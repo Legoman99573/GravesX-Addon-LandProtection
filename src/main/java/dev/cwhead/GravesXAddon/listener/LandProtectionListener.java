@@ -204,9 +204,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.CREATE)) {
-            deny(player, Action.CREATE, event);
-        } else {
             debugAllowed(player, loc, Action.CREATE);
+        } else {
+            deny(player, Action.CREATE, event);
         }
     }
 
@@ -217,9 +217,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.TELEPORT)) {
-            deny(player, Action.TELEPORT, event);
-        } else {
             debugAllowed(player, loc, Action.TELEPORT);
+        } else {
+            deny(player, Action.TELEPORT, event);
         }
     }
 
@@ -230,9 +230,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.OPEN)) {
-            deny(player, Action.OPEN, event);
-        } else {
             debugAllowed(player, loc, Action.OPEN);
+        } else {
+            deny(player, Action.OPEN, event);
         }
     }
 
@@ -243,9 +243,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.AUTO_LOOT)) {
-            deny(player, Action.AUTO_LOOT, event);
-        } else {
             debugAllowed(player, loc, Action.AUTO_LOOT);
+        } else {
+            deny(player, Action.AUTO_LOOT, event);
         }
     }
 
@@ -256,9 +256,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.WALK_OVER)) {
-            deny(player, Action.WALK_OVER, event);
-        } else {
             debugAllowed(player, loc, Action.WALK_OVER);
+        } else {
+            deny(player, Action.WALK_OVER, event);
         }
     }
 
@@ -269,9 +269,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.PROJECTILE)) {
-            deny(player, Action.PROJECTILE, event);
-        } else {
             debugAllowed(player, loc, Action.PROJECTILE);
+        } else {
+            deny(player, Action.PROJECTILE, event);
         }
     }
 
@@ -282,9 +282,9 @@ public class LandProtectionListener implements Listener {
         Location loc = player.getLocation();
 
         if (isAllowedEverywhere(player, loc, Action.BREAK)) {
-            deny(player, Action.BREAK, event);
-        } else {
             debugAllowed(player, loc, Action.BREAK);
+        } else {
+            deny(player, Action.BREAK, event);
         }
     }
 }
