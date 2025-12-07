@@ -5,6 +5,7 @@ import dev.cwhead.GravesXAddon.LandProtection;
 import dev.cwhead.GravesXAddon.config.LandProtectionMessagesConfig;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -39,8 +40,9 @@ public class LandProtectionListener implements Listener {
         }
     }
 
-    private void deny(Player p, Action a) {
+    private void deny(Player p, Action a, Cancellable e) {
         p.sendMessage(messages.denyMessageForAction(a.key, a.defaultText));
+        e.setCancelled(true);
     }
 
     private void debugAllowed(Player p, Location loc, Action a) {
@@ -52,8 +54,15 @@ public class LandProtectionListener implements Listener {
 
     /**
      * Returns true if the action is allowed across all enabled protection systems.
-     * For each system: allowed if (permission check passes) OR (membership check passes).
-     * If any enabled system denies, we return false.
+     *
+     * WorldGuard:
+     *  - If the player is a member of any applicable region at the location -> always allowed.
+     *  - Otherwise, non-members rely on the flag allow/deny via canX().
+     *
+     * Other systems:
+     *  - Behavior is delegated to their canX()/isMember helpers.
+     *
+     * If any enabled system denies, this returns false.
      */
     private boolean isAllowedEverywhere(Player player, Location loc, Action action) {
         boolean allowed = true;
@@ -86,28 +95,50 @@ public class LandProtectionListener implements Listener {
         return allowed;
     }
 
+    /**
+     * WorldGuard semantics:
+     *  - If player is a member of ANY applicable region -> always allowed.
+     *  - Otherwise -> rely on WG flags via canX().
+     */
     private boolean checkWG(Player p, Location loc, Action a) {
-        boolean perm;
-        switch (a) {
-            case CREATE:     perm = plugin.getWorldGuard().canCreateGrave(p, loc); break;
-            case TELEPORT:   perm = plugin.getWorldGuard().canTeleport(p, loc);    break;
-            case OPEN:       perm = plugin.getWorldGuard().canLoot(p, loc);        break;
-            case AUTO_LOOT:  perm = plugin.getWorldGuard().canAutoLoot(p, loc);    break;
-            case WALK_OVER:  perm = plugin.getWorldGuard().canWalkOver(p, loc);    break;
-            case PROJECTILE: perm = plugin.getWorldGuard().canProjectile(p, loc);  break;
-            case BREAK:      perm = plugin.getWorldGuard().canBreak(p, loc);       break;
-            default:         perm = true;
-        }
-        if (perm) return true;
-
         List<String> keys = plugin.getWorldGuard().getRegionKeyList(loc);
         for (String key : keys) {
             String[] parts = key.split("\\|");
-            if (parts.length >= 3 && plugin.getWorldGuard().isMember(parts[2], p)) {
-                return true;
+            if (parts.length >= 3) {
+                String regionId = parts[2];
+                if (plugin.getWorldGuard().isMember(regionId, p)) {
+                    return true;
+                }
             }
         }
-        return false;
+
+        boolean perm;
+        switch (a) {
+            case CREATE:
+                perm = plugin.getWorldGuard().canCreateGrave(p, loc);
+                break;
+            case TELEPORT:
+                perm = plugin.getWorldGuard().canTeleport(p, loc);
+                break;
+            case OPEN:
+                perm = plugin.getWorldGuard().canLoot(p, loc);
+                break;
+            case AUTO_LOOT:
+                perm = plugin.getWorldGuard().canAutoLoot(p, loc);
+                break;
+            case WALK_OVER:
+                perm = plugin.getWorldGuard().canWalkOver(p, loc);
+                break;
+            case PROJECTILE:
+                perm = plugin.getWorldGuard().canProjectile(p, loc);
+                break;
+            case BREAK:
+                perm = plugin.getWorldGuard().canBreak(p, loc);
+                break;
+            default:
+                perm = true;
+        }
+        return perm;
     }
 
     private boolean checkTowny(Player p, Location loc, Action a) {
@@ -190,108 +221,93 @@ public class LandProtectionListener implements Listener {
         return false;
     }
 
-    // === Event handlers ===
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveCreate(GraveCreateEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.CREATE)) {
-            deny(player, Action.CREATE);
-            event.setCancelled(true);
+            deny(player, Action.CREATE, event);
         } else {
-            event.setCancelled(false);
+            // Allowed: do not cancel, just debug.
             debugAllowed(player, loc, Action.CREATE);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveTeleport(GraveTeleportEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.TELEPORT)) {
-            deny(player, Action.TELEPORT);
-            event.setCancelled(true);
+            deny(player, Action.TELEPORT, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.TELEPORT);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveOpen(GraveOpenEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.OPEN)) {
-            deny(player, Action.OPEN);
-            event.setCancelled(true);
+            deny(player, Action.OPEN, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.OPEN);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveAutoLooted(GraveAutoLootEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.AUTO_LOOT)) {
-            deny(player, Action.AUTO_LOOT);
-            event.setCancelled(true);
+            deny(player, Action.AUTO_LOOT, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.AUTO_LOOT);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveWalkedOver(GraveWalkOverEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.WALK_OVER)) {
-            deny(player, Action.WALK_OVER);
-            event.setCancelled(true);
+            deny(player, Action.WALK_OVER, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.WALK_OVER);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveProjectile(GraveProjectileHitEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.PROJECTILE)) {
-            deny(player, Action.PROJECTILE);
-            event.setCancelled(true);
+            deny(player, Action.PROJECTILE, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.PROJECTILE);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onGraveBreak(GraveBreakEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.BREAK)) {
-            deny(player, Action.BREAK);
-            event.setCancelled(true);
+            deny(player, Action.BREAK, event);
         } else {
-            event.setCancelled(false);
             debugAllowed(player, loc, Action.BREAK);
         }
     }
