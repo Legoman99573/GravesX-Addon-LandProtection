@@ -65,34 +65,34 @@ public class LandProtectionListener implements Listener {
      * If any enabled system denies, this returns false.
      */
     private boolean isAllowedEverywhere(Player player, Location loc, Action action) {
-        boolean allowed = true;
+        boolean allowed;
 
         if (plugin.isWorldGuardEnabled() && plugin.getWorldGuard() != null) {
             allowed = checkWG(player, loc, action);
-            if (!allowed) return false;
+            if (allowed) return true;
         }
 
         if (plugin.isTownyEnabled() && plugin.getTowny() != null) {
             allowed = checkTowny(player, loc, action);
-            if (!allowed) return false;
+            if (allowed) return true;
         }
 
         if (plugin.isLandsEnabled() && plugin.getLands() != null) {
             allowed = checkLands(player, loc, action);
-            if (!allowed) return false;
+            if (allowed) return true;
         }
 
         if (plugin.isGriefDefenderEnabled() && plugin.getGriefDefender() != null) {
             allowed = checkGD(player, loc, action);
-            if (!allowed) return false;
+            if (allowed) return true;
         }
 
         if (plugin.isGriefPreventionEnabled() && plugin.getGriefPrevention() != null) {
             allowed = checkGP(player, loc, action);
-            if (!allowed) return false;
+            if (allowed) return true;
         }
 
-        return allowed;
+        return false;
     }
 
     /**
@@ -112,64 +112,43 @@ public class LandProtectionListener implements Listener {
             }
         }
 
-        boolean perm;
-        switch (a) {
-            case CREATE:
-                perm = plugin.getWorldGuard().canCreateGrave(p, loc);
-                break;
-            case TELEPORT:
-                perm = plugin.getWorldGuard().canTeleport(p, loc);
-                break;
-            case OPEN:
-                perm = plugin.getWorldGuard().canLoot(p, loc);
-                break;
-            case AUTO_LOOT:
-                perm = plugin.getWorldGuard().canAutoLoot(p, loc);
-                break;
-            case WALK_OVER:
-                perm = plugin.getWorldGuard().canWalkOver(p, loc);
-                break;
-            case PROJECTILE:
-                perm = plugin.getWorldGuard().canProjectile(p, loc);
-                break;
-            case BREAK:
-                perm = plugin.getWorldGuard().canBreak(p, loc);
-                break;
-            default:
-                perm = true;
-        }
-        return perm;
+        return switch (a) {
+            case CREATE -> plugin.getWorldGuard().canCreateGrave(p, loc);
+            case TELEPORT -> plugin.getWorldGuard().canTeleport(p, loc);
+            case OPEN -> plugin.getWorldGuard().canLoot(p, loc);
+            case AUTO_LOOT -> plugin.getWorldGuard().canAutoLoot(p, loc);
+            case WALK_OVER -> plugin.getWorldGuard().canWalkOver(p, loc);
+            case PROJECTILE -> plugin.getWorldGuard().canProjectile(p, loc);
+            case BREAK -> plugin.getWorldGuard().canBreak(p, loc);
+        };
     }
 
     private boolean checkTowny(Player p, Location loc, Action a) {
-        boolean perm;
-        switch (a) {
-            case CREATE:     perm = plugin.getTowny().canCreateGrave(p, loc);   break;
-            case TELEPORT:   perm = plugin.getTowny().canTeleport(p, loc);      break;
-            case OPEN:       perm = plugin.getTowny().canLoot(p, loc);          break;
-            case AUTO_LOOT:  perm = plugin.getTowny().canAutoLoot(p, loc);      break;
-            case WALK_OVER:  perm = plugin.getTowny().canWalkOver(p, loc);      break;
-            case PROJECTILE: perm = plugin.getTowny().canProjectile(p, loc);    break;
-            case BREAK:      perm = plugin.getTowny().canBreak(p, loc);         break;
-            default:         perm = true;
-        }
+        boolean perm = switch (a) {
+            case CREATE -> plugin.getTowny().canCreateGrave(p, loc);
+            case TELEPORT -> plugin.getTowny().canTeleport(p, loc);
+            case OPEN -> plugin.getTowny().canLoot(p, loc);
+            case AUTO_LOOT -> plugin.getTowny().canAutoLoot(p, loc);
+            case WALK_OVER -> plugin.getTowny().canWalkOver(p, loc);
+            case PROJECTILE -> plugin.getTowny().canProjectile(p, loc);
+            case BREAK -> plugin.getTowny().canBreak(p, loc);
+        };
         if (perm) return true;
 
         return plugin.getTowny().isResident(p, loc);
     }
 
     private boolean checkLands(Player p, Location loc, Action a) {
-        boolean perm;
-        switch (a) {
-            case CREATE:     perm = plugin.getLands().canCreateGrave(p, loc);   break;
-            case TELEPORT:   perm = plugin.getLands().canTeleport(p, loc);      break;
-            case OPEN:       perm = plugin.getLands().canLoot(p, loc);          break;
-            case AUTO_LOOT:  perm = plugin.getLands().canAutoLoot(p, loc);      break;
-            case WALK_OVER:  perm = plugin.getLands().canWalkOver(p, loc);      break;
-            case PROJECTILE: perm = plugin.getLands().canProjectile(p, loc);    break;
-            case BREAK:      perm = plugin.getLands().canBreak(p, loc);         break;
-            default:         perm = true;
-        }
+        boolean perm = switch (a) {
+            case CREATE -> plugin.getLands().canCreateGrave(p, loc);
+            case TELEPORT -> plugin.getLands().canTeleport(p, loc);
+            case OPEN -> plugin.getLands().canLoot(p, loc);
+            case AUTO_LOOT -> plugin.getLands().canAutoLoot(p, loc);
+            case WALK_OVER -> plugin.getLands().canWalkOver(p, loc);
+            case PROJECTILE -> plugin.getLands().canProjectile(p, loc);
+            case BREAK -> plugin.getLands().canBreak(p, loc);
+            default -> true;
+        };
         if (perm) return true;
 
         List<String> keys = plugin.getLands().getRegionKeyList(loc);
@@ -180,17 +159,16 @@ public class LandProtectionListener implements Listener {
     }
 
     private boolean checkGD(Player p, Location loc, Action a) {
-        boolean perm;
-        switch (a) {
-            case CREATE:     perm = plugin.getGriefDefender().canCreateGrave(p, loc);   break;
-            case TELEPORT:   perm = plugin.getGriefDefender().canTeleport(p, loc);      break;
-            case OPEN:       perm = plugin.getGriefDefender().canLoot(p, loc);          break;
-            case AUTO_LOOT:  perm = plugin.getGriefDefender().canAutoLoot(p, loc);      break;
-            case WALK_OVER:  perm = plugin.getGriefDefender().canWalkOver(p, loc);      break;
-            case PROJECTILE: perm = plugin.getGriefDefender().canProjectile(p, loc);    break;
-            case BREAK:      perm = plugin.getGriefDefender().canBreak(p, loc);         break;
-            default:         perm = true;
-        }
+        boolean perm = switch (a) {
+            case CREATE -> plugin.getGriefDefender().canCreateGrave(p, loc);
+            case TELEPORT -> plugin.getGriefDefender().canTeleport(p, loc);
+            case OPEN -> plugin.getGriefDefender().canLoot(p, loc);
+            case AUTO_LOOT -> plugin.getGriefDefender().canAutoLoot(p, loc);
+            case WALK_OVER -> plugin.getGriefDefender().canWalkOver(p, loc);
+            case PROJECTILE -> plugin.getGriefDefender().canProjectile(p, loc);
+            case BREAK -> plugin.getGriefDefender().canBreak(p, loc);
+        };
+
         if (perm) return true;
 
         List<String> keys = plugin.getGriefDefender().getRegionKeyList(loc);
@@ -201,17 +179,16 @@ public class LandProtectionListener implements Listener {
     }
 
     private boolean checkGP(Player p, Location loc, Action a) {
-        boolean perm;
-        switch (a) {
-            case CREATE:     perm = plugin.getGriefPrevention().canCreateGrave(p, loc);   break;
-            case TELEPORT:   perm = plugin.getGriefPrevention().canTeleport(p, loc);      break;
-            case OPEN:       perm = plugin.getGriefPrevention().canLoot(p, loc);          break;
-            case AUTO_LOOT:  perm = plugin.getGriefPrevention().canAutoLoot(p, loc);      break;
-            case WALK_OVER:  perm = plugin.getGriefPrevention().canWalkOver(p, loc);      break;
-            case PROJECTILE: perm = plugin.getGriefPrevention().canProjectile(p, loc);    break;
-            case BREAK:      perm = plugin.getGriefPrevention().canBreak(p, loc);         break;
-            default:         perm = true;
-        }
+        boolean perm = switch (a) {
+            case CREATE -> plugin.getGriefPrevention().canCreateGrave(p, loc);
+            case TELEPORT -> plugin.getGriefPrevention().canTeleport(p, loc);
+            case OPEN -> plugin.getGriefPrevention().canLoot(p, loc);
+            case AUTO_LOOT -> plugin.getGriefPrevention().canAutoLoot(p, loc);
+            case WALK_OVER -> plugin.getGriefPrevention().canWalkOver(p, loc);
+            case PROJECTILE -> plugin.getGriefPrevention().canProjectile(p, loc);
+            case BREAK -> plugin.getGriefPrevention().canBreak(p, loc);
+        };
+
         if (perm) return true;
 
         List<String> keys = plugin.getGriefPrevention().getRegionKeyList(loc);
@@ -226,10 +203,9 @@ public class LandProtectionListener implements Listener {
         if (!(event.getEntity() instanceof Player player)) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.CREATE)) {
+        if (isAllowedEverywhere(player, loc, Action.CREATE)) {
             deny(player, Action.CREATE, event);
         } else {
-            // Allowed: do not cancel, just debug.
             debugAllowed(player, loc, Action.CREATE);
         }
     }
@@ -240,7 +216,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.TELEPORT)) {
+        if (isAllowedEverywhere(player, loc, Action.TELEPORT)) {
             deny(player, Action.TELEPORT, event);
         } else {
             debugAllowed(player, loc, Action.TELEPORT);
@@ -253,7 +229,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.OPEN)) {
+        if (isAllowedEverywhere(player, loc, Action.OPEN)) {
             deny(player, Action.OPEN, event);
         } else {
             debugAllowed(player, loc, Action.OPEN);
@@ -266,7 +242,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.AUTO_LOOT)) {
+        if (isAllowedEverywhere(player, loc, Action.AUTO_LOOT)) {
             deny(player, Action.AUTO_LOOT, event);
         } else {
             debugAllowed(player, loc, Action.AUTO_LOOT);
@@ -279,7 +255,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.WALK_OVER)) {
+        if (isAllowedEverywhere(player, loc, Action.WALK_OVER)) {
             deny(player, Action.WALK_OVER, event);
         } else {
             debugAllowed(player, loc, Action.WALK_OVER);
@@ -292,7 +268,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.PROJECTILE)) {
+        if (isAllowedEverywhere(player, loc, Action.PROJECTILE)) {
             deny(player, Action.PROJECTILE, event);
         } else {
             debugAllowed(player, loc, Action.PROJECTILE);
@@ -305,7 +281,7 @@ public class LandProtectionListener implements Listener {
         if (player == null) return;
         Location loc = player.getLocation();
 
-        if (!isAllowedEverywhere(player, loc, Action.BREAK)) {
+        if (isAllowedEverywhere(player, loc, Action.BREAK)) {
             deny(player, Action.BREAK, event);
         } else {
             debugAllowed(player, loc, Action.BREAK);
