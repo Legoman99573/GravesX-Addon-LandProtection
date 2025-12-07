@@ -19,7 +19,6 @@ public class LandProtectionListener implements Listener {
     public LandProtectionListener(LandProtection plugin) {
         this.plugin = plugin;
         this.messages = new LandProtectionMessagesConfig(plugin);
-
     }
 
     private enum Action {
@@ -33,19 +32,22 @@ public class LandProtectionListener implements Listener {
 
         final String key;
         final String defaultText;
+
         Action(String key, String defaultText) {
             this.key = key;
             this.defaultText = defaultText;
         }
     }
 
-    private void deny(Player p, Action a, CancellableGravesEvent e) {
+    private void deny(Player p, Action a) {
         p.sendMessage(messages.denyMessageForAction(a.key, a.defaultText));
-        e.setCancelled(true);
     }
 
     private void debugAllowed(Player p, Location loc, Action a) {
-        plugin.getGravesXAPI().plugin().debugMessage(p.getDisplayName() + " can " + a.name().toLowerCase() + " at: " + loc, 2);
+        plugin.getGravesXAPI().plugin().debugMessage(
+                p.getDisplayName() + " can " + a.name().toLowerCase() + " at: " + loc,
+                2
+        );
     }
 
     /**
@@ -188,150 +190,109 @@ public class LandProtectionListener implements Listener {
         return false;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    // === Event handlers ===
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveCreate(GraveCreateEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
+        if (!(event.getEntity() instanceof Player player)) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.CREATE)) {
-            deny(player, event);
+            deny(player, Action.CREATE);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.CREATE);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveTeleport(GraveTeleportEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.TELEPORT)) {
-            deny(player, event);
+            deny(player, Action.TELEPORT);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.TELEPORT);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveOpen(GraveOpenEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.OPEN)) {
-            deny(player, event);
+            deny(player, Action.OPEN);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.OPEN);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveAutoLooted(GraveAutoLootEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.AUTO_LOOT)) {
-            deny(player, event);
+            deny(player, Action.AUTO_LOOT);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.AUTO_LOOT);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveWalkedOver(GraveWalkOverEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.WALK_OVER)) {
-            deny(player, event);
+            deny(player, Action.WALK_OVER);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.WALK_OVER);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveProjectile(GraveProjectileHitEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.PROJECTILE)) {
-            deny(player, event);
+            deny(player, Action.PROJECTILE);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.PROJECTILE);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onGraveBreak(GraveBreakEvent event) {
         Player player = event.getPlayer();
         if (player == null) return;
         Location loc = player.getLocation();
 
         if (!isAllowedEverywhere(player, loc, Action.BREAK)) {
-            deny(player, event);
+            deny(player, Action.BREAK);
+            event.setCancelled(true);
         } else {
+            event.setCancelled(false);
             debugAllowed(player, loc, Action.BREAK);
         }
-    }
-
-    private interface CancellableGravesEvent {
-        void setCancelled(boolean cancelled);
-    }
-
-    private static CancellableGravesEvent adapt(GraveCreateEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveTeleportEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveOpenEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveAutoLootEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveWalkOverEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveProjectileHitEvent e) {
-        return e::setCancelled;
-    }
-
-    private static CancellableGravesEvent adapt(GraveBreakEvent e) {
-        return e::setCancelled;
-    }
-
-    private void deny(Player p, GraveCreateEvent e) {
-        deny(p, Action.CREATE, adapt(e));
-    }
-
-    private void deny(Player p, GraveTeleportEvent e) {
-        deny(p, Action.TELEPORT, adapt(e));
-    }
-
-    private void deny(Player p, GraveOpenEvent e) {
-        deny(p, Action.OPEN, adapt(e));
-    }
-    private void deny(Player p, GraveAutoLootEvent e) {
-        deny(p, Action.AUTO_LOOT, adapt(e));
-    }
-    private void deny(Player p, GraveWalkOverEvent e) {
-        deny(p, Action.WALK_OVER, adapt(e));
-    }
-    private void deny(Player p, GraveProjectileHitEvent e) {
-        deny(p, Action.PROJECTILE, adapt(e));
-    }
-    private void deny(Player p, GraveBreakEvent e) {
-        deny(p, Action.BREAK, adapt(e));
     }
 }
