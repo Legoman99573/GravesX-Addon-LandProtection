@@ -6,7 +6,7 @@
 
     <groupId>dev.cwhead.GravesXAddon</groupId>
     <artifactId>GravesXAddon-LandProtection</artifactId>
-    <version>4.9.5.1</version>
+    <version>4.9.5.2</version>
     <packaging>jar</packaging>
 
     <name>GravesXAddon-LandProtection</name>
@@ -60,8 +60,12 @@
 
     <repositories>
         <repository>
-            <id>cwhead-gravesx-snapshots</id>
+            <id>cwhead-repo-release</id>
             <url>https://repo.cwhead.dev/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <id>cwhead-repo-snapshots</id>
+            <url>https://repo.cwhead.dev/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>spigotmc-repo</id>
@@ -99,7 +103,7 @@
         <dependency>
             <groupId>com.ranull</groupId>
             <artifactId>GravesX</artifactId>
-            <version>4.9.9.2-api</version>
+            <version>4.9.10.10-api-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
